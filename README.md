@@ -18,19 +18,33 @@ Build a mobile application that supports Android and iOS which collects all the 
 - MongoDB Realm
 - Google Sheets API (*Needs more R&D*)
 
-## How to build
+## System Architecture *HIGH LEVEL DESIGN*
 - Can do CRUD operation on category **price**, **description**
-- Separated by UID
+- Separated by Category UID
 - Debounce offline save *background thread*
 - Sync Save operation *background service task*
 - Sync Retrieve operation *can be triggered manually or via app launch*
+- Local Push Notification on not completed task **time based operation**
 
 ## Planning & System Design
 1. Story planning
     1. Features
+        - Create Task
+        - Retrieve Task
+        - Update Task
+        - Delete Task
+        - Complete Task
+        - Debounce save operation *cache strategy*
+        - Local Push Notification *time base reminder*
+        - Sync Save *Service API*
+        - Sync Retrieve *Service API*
     2. Use cases
+       *INSERT DIAGRAM* 
     3. Edge cases (Error handling)
-2. System Architecture (High level design)
-3. Development Architecture (Code) Base design
-4. Layout & Design
-5. CI/CD Deployment Status
+       *INSERT DIAGRAM*
+2. Development Architecture (Code) Base design
+    1. Koin Dependency
+    2. Retrofit Dependency
+       
+3. Layout & Design
+4. CI/CD Deployment Status

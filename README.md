@@ -38,13 +38,14 @@ Build a mobile application that supports Android and iOS which collects all the 
         - Local Push Notification *time base reminder*
         - Sync Save *Service API*
         - Sync Retrieve *Service API*
-    2. Use cases
-       *INSERT DIAGRAM* 
-    3. Edge cases (Error handling)
-       *INSERT DIAGRAM*
+    2. Edge cases (Error handling)
+       - *INSERT DIAGRAM*
+       
 2. Development Architecture (Code) Base design
     1. Koin Dependency
-    2. Retrofit Dependency
+    2. Realm Dependency
+    3. Local Notification Dependency
+    4. Testing Library Dependency
        
 3. Layout & Design
 4. CI/CD Deployment Status

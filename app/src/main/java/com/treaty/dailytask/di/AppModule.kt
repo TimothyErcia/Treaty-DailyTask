@@ -4,6 +4,7 @@ import com.treaty.dailytask.model.Task
 import com.treaty.dailytask.repository.task.TaskRepository
 import com.treaty.dailytask.repository.task.TaskRepositoryImpl
 import com.treaty.dailytask.utility.NetworkUtility
+import com.treaty.dailytask.viewmodel.TaskGroupViewModel
 import com.treaty.dailytask.viewmodel.TaskViewModel
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
@@ -32,5 +33,11 @@ val repositoryModule = module {
 val taskAppModule = module {
     viewModel {
         TaskViewModel(get())
+    }
+}
+
+val taskGroupModule = module {
+    viewModel {
+        TaskGroupViewModel(get())
     }
 }

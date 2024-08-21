@@ -4,14 +4,30 @@ import io.realm.kotlin.ext.realmListOf
 import io.realm.kotlin.types.RealmInstant
 import io.realm.kotlin.types.RealmList
 import io.realm.kotlin.types.RealmObject
-import io.realm.kotlin.types.RealmUUID
+import io.realm.kotlin.types.annotations.Ignore
 import io.realm.kotlin.types.annotations.PrimaryKey
+import java.util.Date
 
-class TaskGroup : RealmObject {
+class TaskGroup() : RealmObject {
     @PrimaryKey
-    var taskGroupUUID: RealmUUID = RealmUUID.random()
-
-    var cutoffDate: RealmInstant = RealmInstant.now()
-    var totalPrice = 0
+    var taskGroupUUID: String = ""
+    var cutoffDate: Date? = null
     var taskId: RealmList<Task> = realmListOf()
+
+    var totalPrice = run {
+        var total = 0
+        taskId.forEach { task ->
+            total += task.price
+        }
+        total
+    }
+    constructor(
+        taskGroupUUID: String,
+        cutoffDate: Date?,
+        taskId: RealmList<Task>
+    ) : this() {
+        this.taskGroupUUID = taskGroupUUID
+        this.cutoffDate = cutoffDate
+        this.taskId = taskId
+    }
 }

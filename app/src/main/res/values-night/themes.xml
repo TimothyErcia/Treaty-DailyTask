@@ -3,5 +3,7 @@
     <style name="Base.Theme.DailyTask" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your dark theme here. -->
         <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+        <item name="android:fontFamily">@font/kufam</item>
+        <item name="fontFamily">@font/kufam</item>
     </style>
 </resources>

@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">Daily Task</string>
+
+    <array name="categories">
+        <item>Food</item>
+        <item>Transportation</item>
+        <item>Utility Condo</item>
+        <item>Utility Home</item>
+        <item>Personal</item>
+    </array>
 </resources>

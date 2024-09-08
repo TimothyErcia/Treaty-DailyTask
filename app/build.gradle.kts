@@ -34,6 +34,9 @@ android {
     kotlinOptions {
         jvmTarget = "1.8"
     }
+    viewBinding {
+        enable = true
+    }
 }
 
 dependencies {
@@ -49,6 +52,8 @@ dependencies {
     implementation(libs.koin.android)
     implementation(libs.library.base)
     implementation(libs.library.sync)
+    implementation(libs.androidx.navigation.fragment.ktx)
+    implementation(libs.androidx.navigation.ui.ktx)
 
     testImplementation(libs.junit)
     testImplementation(libs.koin.test)

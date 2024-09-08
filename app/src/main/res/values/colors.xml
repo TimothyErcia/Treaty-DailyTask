@@ -4,7 +4,7 @@
     <color name="white">#FFFFFFFF</color>
 
     <!--LIGHT THEMED COLORS-->
-    <color name="backgroundLight">#FFFBE9</color>
+    <color name="backgroundColor">#FFFBE9</color>
     <color name="fontColorLight">#272727</color>
 
     <color name="foodCategory">#C3E991</color>

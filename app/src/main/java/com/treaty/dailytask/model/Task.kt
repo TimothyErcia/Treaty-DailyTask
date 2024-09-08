@@ -1,19 +1,16 @@
 package com.treaty.dailytask.model
 
 import io.realm.kotlin.types.RealmObject
-import io.realm.kotlin.types.annotations.PrimaryKey
 import org.mongodb.kbson.ObjectId
-import java.util.Date
+import java.time.LocalDateTime
 
 open class Task() : RealmObject {
-    @PrimaryKey
-    var taskId: String = ""
+    var taskId: ObjectId = ObjectId.invoke()
     var price: Int = 0
-    var dateAdded: Date? = null
+    var dateAdded: String = ""
 
     constructor(price: Int) : this() {
-        this.taskId = ObjectId.invoke().toString()
         this.price = price
-        this.dateAdded = Date()
+        this.dateAdded = LocalDateTime.now().toString()
     }
 }

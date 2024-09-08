@@ -1,11 +1,11 @@
 package com.treaty.dailytask.repository.taskgroup
 
-import com.treaty.dailytask.model.Task
-import com.treaty.dailytask.model.TaskGroup
+import com.treaty.dailytask.model.TaskGroup.TaskGroupObject
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 
 interface TaskGroupRepository {
-    suspend fun insert(task: TaskGroup)
+    suspend fun insert(taskGroupObject: TaskGroupObject)
 
-    suspend fun getAllTaskGroup(): Flow<List<TaskGroup>>
+    suspend fun getAllTaskGroup(): Flow<List<TaskGroupObject>>
 }

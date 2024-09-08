@@ -1,8 +1,11 @@
 package com.treaty.dailytask.di
 
 import com.treaty.dailytask.model.Task
+import com.treaty.dailytask.model.TaskGroup.TaskGroupObject
 import com.treaty.dailytask.repository.task.TaskRepository
 import com.treaty.dailytask.repository.task.TaskRepositoryImpl
+import com.treaty.dailytask.repository.taskgroup.TaskGroupRepository
+import com.treaty.dailytask.repository.taskgroup.TaskGroupRepositoryImpl
 import com.treaty.dailytask.utility.NetworkUtility
 import com.treaty.dailytask.viewmodel.TaskGroupViewModel
 import com.treaty.dailytask.viewmodel.TaskViewModel
@@ -16,7 +19,10 @@ val appModule = module {
     single { NetworkUtility(androidContext()) }
     single {
         val config = RealmConfiguration.Builder(
-            schema = setOf(Task::class)
+            schema = setOf(
+                Task::class,
+                TaskGroupObject::class
+            )
         )
             .compactOnLaunch()
             .build()
@@ -27,6 +33,10 @@ val appModule = module {
 val repositoryModule = module {
     single<TaskRepository> {
         TaskRepositoryImpl(get())
+    }
+
+    single<TaskGroupRepository> {
+        TaskGroupRepositoryImpl(get())
     }
 }
 

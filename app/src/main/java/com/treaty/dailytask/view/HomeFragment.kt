@@ -7,17 +7,21 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.treaty.dailytask.R
 import com.treaty.dailytask.databinding.FragmentHomeBinding
-import com.treaty.dailytask.model.Task
-import com.treaty.dailytask.model.TaskGroup.TaskGroupObject
 import com.treaty.dailytask.viewmodel.TaskGroupViewModel
-import io.realm.kotlin.ext.realmListOf
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -47,11 +51,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             }
         }
 
-        viewLifecycleOwner.lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                initializeTotalSum()
-            }
-        }
     }
 
     private suspend fun initializeTaskGroup() {
@@ -59,8 +58,8 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             .collectLatest { data ->
                 adapter = TaskViewAdapter(data, object:TaskViewAdapter.TaskGroupEvent {
                     override fun onClickAdd(index: Int) {
-                        Log.d("TASKGROUP", "onClickAdd: ")
-                        val taskDialog = TaskDialog(false)
+                        Log.d("TASKGROUP", "onClickAdd: ${data.get(index)}")
+                        val taskDialog = TaskDialog(false, data.get(index).categoryID)
                         taskDialog.show(childFragmentManager, "sometag")
                     }
 
@@ -70,6 +69,8 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                 })
                 binding.taskGroupListView.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
                 binding.taskGroupListView.adapter = adapter
+
+                binding.bottomLayout.totalSpendingTxt.text = "$ ${taskGroupViewModel.getTotalSum(data)}.00"
             }
     }
 
@@ -77,14 +78,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         binding.bottomLayout.addTaskGroupBtn.setOnClickListener {
             val taskDialog = TaskDialog(true)
             taskDialog.show(childFragmentManager, "sometag")
-        }
-    }
-
-    private suspend fun initializeTotalSum() {
-        taskGroupViewModel.totalSum.collectLatest {
-            withContext(Dispatchers.Main) {
-                binding.bottomLayout.totalSpendingTxt.text = "$ $it.00"
-            }
         }
     }
 }

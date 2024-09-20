@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="155dp"
-    android:background="@drawable/taskgroup_corners"
+    android:layout_height="138dp"
+    android:padding="10sp"
+    android:layout_marginBottom="14sp"
+    android:id="@+id/taskViewLayout"
     android:backgroundTint="@color/foodCategory"
-    android:paddingHorizontal="10sp"
-    android:paddingVertical="10sp"
+    android:background="@drawable/taskgroup_corners"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <LinearLayout
@@ -24,15 +25,15 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="CategoryTitle"
-            android:textSize="20sp" />
+            android:textSize="15sp" />
 
         <TextView
             android:id="@+id/priceTxt"
             android:layout_width="match_parent"
             android:layout_height="105sp"
             android:text="$ PRICE"
-            android:textSize="70sp"
-            android:translationY="-35dp" />
+            android:textSize="61sp"
+            android:translationY="-28dp" />
 
         <TextView
             android:id="@+id/lastUpdateTxt"
@@ -40,14 +41,14 @@
             android:layout_height="22sp"
             android:text="Last added date: 8/19/2024"
             android:textSize="12sp"
-            android:translationY="-35dp" />
+            android:translationY="-43dp" />
 
     </LinearLayout>
 
     <ImageView
         android:id="@+id/removeTaskBtn"
-        android:layout_width="26dp"
-        android:layout_height="26dp"
+        android:layout_width="23dp"
+        android:layout_height="23dp"
         android:src="@drawable/trash_icon"
         android:layout_marginEnd="4dp"
         android:layout_marginTop="4dp"
@@ -56,8 +57,8 @@
 
     <ImageView
         android:id="@+id/addTaskBtn"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
+        android:layout_width="26dp"
+        android:layout_height="26dp"
         android:layout_marginEnd="2dp"
         android:layout_marginBottom="4dp"
         app:tint="@color/black"

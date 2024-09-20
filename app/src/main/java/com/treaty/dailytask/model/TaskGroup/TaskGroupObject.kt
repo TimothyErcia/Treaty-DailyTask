@@ -1,6 +1,6 @@
 package com.treaty.dailytask.model.TaskGroup
 
-import com.treaty.dailytask.model.Task
+import com.treaty.dailytask.model.Task.TaskObject
 import io.realm.kotlin.ext.realmListOf
 import io.realm.kotlin.types.RealmList
 import io.realm.kotlin.types.RealmObject
@@ -11,13 +11,16 @@ open class TaskGroupObject() : RealmObject {
     @PrimaryKey
     var taskGroupUUID: String = RealmUUID.random().toString()
     var categoryID: String = ""
-    var taskList: RealmList<Task> = realmListOf()
+    var taskModelList: RealmList<TaskObject> = realmListOf()
+    var backgroundColor: Int = 0
 
     constructor(
         categoryID: String,
-        taskList: RealmList<Task>
+        taskModelList: RealmList<TaskObject>,
+        backgroundColor: Int
     ): this() {
         this.categoryID = categoryID
-        this.taskList = taskList
+        this.taskModelList = taskModelList
+        this.backgroundColor = backgroundColor
     }
 }

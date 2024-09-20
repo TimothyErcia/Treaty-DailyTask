@@ -1,6 +1,7 @@
 package com.treaty.dailytask.di
 
-import com.treaty.dailytask.model.Task
+import com.treaty.dailytask.model.Task.TaskModel
+import com.treaty.dailytask.model.Task.TaskObject
 import com.treaty.dailytask.model.TaskGroup.TaskGroupObject
 import com.treaty.dailytask.repository.task.TaskRepository
 import com.treaty.dailytask.repository.task.TaskRepositoryImpl
@@ -20,7 +21,7 @@ val appModule = module {
     single {
         val config = RealmConfiguration.Builder(
             schema = setOf(
-                Task::class,
+                TaskObject::class,
                 TaskGroupObject::class
             )
         )

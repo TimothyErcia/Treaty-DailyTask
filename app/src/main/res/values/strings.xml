@@ -4,10 +4,16 @@
     <array name="categories">
         <item>Food</item>
         <item>Transportation</item>
-        <item>Utility Condo</item>
-        <item>Utility Home</item>
+        <item>Condo</item>
+        <item>Home</item>
         <item>Personal</item>
     </array>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <array name="categoryColors">
+        <item>foodCategory</item>
+        <item>transportationCategory</item>
+        <item>personalCategory</item>
+        <item>homeCategory</item>
+        <item>condoCategory</item>
+    </array>
 </resources>

@@ -1,80 +1,63 @@
 package com.treaty.dailytask.viewmodel
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.viewModelScope
-import com.treaty.dailytask.model.Task
+import com.treaty.dailytask.model.Task.TaskModel
+import com.treaty.dailytask.model.Task.TaskObject
 import com.treaty.dailytask.model.TaskGroup.TaskGroupModel
 import com.treaty.dailytask.model.TaskGroup.TaskGroupObject
 import com.treaty.dailytask.repository.taskgroup.TaskGroupRepository
+import io.realm.kotlin.ext.realmListOf
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.emptyFlow
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import kotlin.math.log
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class TaskGroupViewModel(private val taskGroupRepository: TaskGroupRepository) : ViewModel() {
 
-    private val _taskGroupObject = MutableStateFlow<List<TaskGroupModel>>(emptyList())
-    val taskGroup = _taskGroupObject.asStateFlow()
-
-    private val _totalSum = MutableStateFlow<Int>(0)
-    val totalSum = _totalSum.asStateFlow()
+    private val _taskGroup = MutableStateFlow<List<TaskGroupModel>>(emptyList())
+    val taskGroup = _taskGroup.asStateFlow()
 
     init {
         viewModelScope.launch {
-            val deferred = listOf(
-                async { getAllTaskGroup() },
-                async { getTotalSum() }
-            )
-
-            awaitAll(*deferred.toTypedArray())
+            getAllTaskGroup()
         }
     }
 
-    suspend fun createNewTaskGroup(taskGroupObject: TaskGroupObject) = withContext(Dispatchers.IO) {
-        taskGroupRepository.insert(taskGroupObject)
+    suspend fun insertOrUpdateTaskGroup(taskGroupModel: TaskGroupModel) = withContext(Dispatchers.IO) {
+        val list = realmListOf<TaskObject>()
+        taskGroupModel.taskModelList.forEach {
+            list.add(TaskObject(it.price, it.dateAdded))
+        }
+        taskGroupRepository.insert(TaskGroupObject(taskGroupModel.categoryID, list, taskGroupModel.backgroundColor))
     }
 
-    private suspend fun getAllTaskGroup() {
+    private suspend fun getAllTaskGroup() = withContext(Dispatchers.IO) {
         taskGroupRepository.getAllTaskGroup()
-            .flowOn(Dispatchers.IO)
             .mapLatest {
                 it.map { taskGroup ->
+                    val taskModelList = parseTaskGroupObject(taskGroup.taskModelList)
                     TaskGroupModel(
                         taskGroup.taskGroupUUID,
                         taskGroup.categoryID,
-                        taskGroup.taskList,
-                        getTotalPrice(taskGroup.taskList),
-                        parseDate(getLastUpdate(taskGroup.taskList))
+                        taskModelList,
+                        getTotalPrice(taskModelList),
+                        parseDate(getLastUpdate(taskModelList)),
+                        taskGroup.backgroundColor
                     )
                 }
             }
             .stateIn(viewModelScope)
             .collectLatest {
-                _taskGroupObject.value = it
+                _taskGroup.value = it
             }
     }
 
@@ -82,13 +65,20 @@ class TaskGroupViewModel(private val taskGroupRepository: TaskGroupRepository) :
         val localDate = LocalDateTime.parse(date)
         return localDate.format(DateTimeFormatter.ofPattern("dd MMM YYYY HH:mm "))
     }
-    private fun getTotalPrice(taskList: List<Task>): Int = taskList.sumOf { task -> task.price }
-    private fun getLastUpdate(taskList: List<Task>) = taskList.lastOrNull()?.dateAdded ?: ""
+    private fun getTotalPrice(taskModelList: List<TaskModel>): Int = taskModelList.sumOf { task -> task.price }
+    private fun getLastUpdate(taskModelList: List<TaskModel>) = taskModelList.lastOrNull()?.dateAdded ?: ""
 
-    private suspend fun getTotalSum() {
-        _taskGroupObject.collectLatest {data ->
-            val sum = data.sumOf { it.totalPrice }
-            _totalSum.value = sum
+    private fun parseTaskGroupObject(taskModelList: List<TaskObject>): List<TaskModel> {
+        return taskModelList.map { data ->
+            TaskModel(data.taskId.toString(), data.price, data.dateAdded)
         }
+    }
+
+    fun getTotalSum(data: List<TaskGroupModel>): Int {
+        if(data.isEmpty()) {
+            return 0
+        }
+
+        return data.sumOf { it.totalPrice }
     }
 }

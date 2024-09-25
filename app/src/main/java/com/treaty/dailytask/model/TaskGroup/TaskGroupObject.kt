@@ -9,7 +9,6 @@ import io.realm.kotlin.types.annotations.PrimaryKey
 
 open class TaskGroupObject() : RealmObject {
     @PrimaryKey
-    var taskGroupUUID: String = RealmUUID.random().toString()
     var categoryID: String = ""
     var taskModelList: RealmList<TaskObject> = realmListOf()
     var backgroundColor: Int = 0

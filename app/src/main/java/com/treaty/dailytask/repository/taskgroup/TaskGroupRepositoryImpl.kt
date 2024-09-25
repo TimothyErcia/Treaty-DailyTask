@@ -4,28 +4,34 @@ import android.util.Log
 import com.treaty.dailytask.model.TaskGroup.TaskGroupModel
 import com.treaty.dailytask.model.TaskGroup.TaskGroupObject
 import io.realm.kotlin.Realm
+import io.realm.kotlin.UpdatePolicy
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 
 class TaskGroupRepositoryImpl(private val realm: Realm) : TaskGroupRepository {
-    override suspend fun insert(taskGroupObject: TaskGroupObject) {
+    override suspend fun insertOrUpdate(taskGroupObject: TaskGroupObject) {
         realm.write {
-            copyToRealm(taskGroupObject)
+            copyToRealm(
+                taskGroupObject,
+                UpdatePolicy.ALL
+            )
         }
     }
 
     override suspend fun getAllTaskGroup(): Flow<List<TaskGroupObject>> {
         val realmQuery = realm.query(TaskGroupObject::class).find()
         val realmFlow = realmQuery.asFlow()
-        if(realmQuery.isNotEmpty()) {
-            Log.d("REALM", "taskgroup UUID: ${realmFlow.first().list.get(0).taskGroupUUID}")
-            Log.d("REALM", "categoryID: ${realmFlow.first().list.get(0).categoryID}")
-            Log.d("REALM", "getTask: ${realmFlow.first().list.get(0).taskModelList.get(0).dateAdded}")
-            Log.d("REALM", "getTask: ${realmFlow.first().list.get(0).taskModelList.get(0).price}")
-            Log.d("REALM", "getTask: ${realmFlow.first().list.get(0).taskModelList.get(0).taskId}")
-        }
-        return flow { realmFlow.collect { data -> emit(data.list) } }
+
+        return realmFlow.map { it.list }
+    }
+
+    override suspend fun getAllTaskGroupByCategory(categoryId: String): Flow<List<TaskGroupObject>> {
+        val realmQuery = realm.query(TaskGroupObject::class, "categoryID == $0", categoryId).find()
+        val realmFlow = realmQuery.asFlow()
+
+        return realmFlow.map { it.list }
     }
 
 }

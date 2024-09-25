@@ -2,13 +2,15 @@ package com.treaty.dailytask.view
 
 import android.app.Dialog
 import android.content.DialogInterface
+import android.content.pm.PackageInfo
+import android.content.pm.PackageManager
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
+import androidx.core.content.PackageManagerCompat
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -17,21 +19,21 @@ import com.treaty.dailytask.databinding.TaskDialogBinding
 import com.treaty.dailytask.model.Task.TaskModel
 import com.treaty.dailytask.model.TaskGroup.TaskGroupModel
 import com.treaty.dailytask.viewmodel.TaskGroupViewModel
-import com.treaty.dailytask.viewmodel.TaskViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import java.time.LocalDateTime
 
 class TaskDialog(
-    private val isTaskGroup: Boolean,
-    private val categoryID: String = ""
+    private val categoryID: String = "",
 ) : DialogFragment() {
 
     private lateinit var binding: TaskDialogBinding
     private val taskGroupViewModel: TaskGroupViewModel by viewModel()
-    private val taskViewModel: TaskViewModel by viewModel()
-    private lateinit var taskGroupModel: TaskGroupModel
+    private var currentTaskList = mutableListOf<TaskModel>()
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -39,19 +41,12 @@ class TaskDialog(
     ): View? {
         initializeUI()
         initializeCategories()
-
-        lifecycleScope.launch {
-            taskViewModel.task.collectLatest {
-                Log.d("TAG", "onCreate: $it")
-            }
-        }
-
         return binding.root
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         binding = TaskDialogBinding.inflate(LayoutInflater.from(requireContext()))
-        if(!isTaskGroup) {
+        if(categoryID.isNotEmpty()) {
             binding.categoryInput.visibility = GONE
         }
         val builder = MaterialAlertDialogBuilder(requireContext(), R.drawable.taskgroup_corners)
@@ -69,12 +64,17 @@ class TaskDialog(
         val price = binding.priceInput.text.toString()
         val category = if(categoryID.isEmpty()) binding.categoryInput.selectedItem.toString() else categoryID
         val backgroundColor = getCategoryColor(category)
+        val newTask = taskGroupViewModel.createNewTask(price.toInt())
+        currentTaskList.add(newTask)
 
-        val taskModel = TaskModel(price = price.toInt(), dateAdded = LocalDateTime.now().toString())
-        lifecycleScope.launch {
-            taskViewModel.insertTask(taskModel)
-            taskGroupModel = TaskGroupModel(categoryID = category, taskModelList = taskViewModel.task.value, backgroundColor = backgroundColor)
-            taskGroupViewModel.insertOrUpdateTaskGroup(taskGroupModel)
+        viewLifecycleOwner.lifecycleScope.launch {
+            taskGroupViewModel.getAllTaskByCategory(category).collectLatest {
+                if(it.isNotEmpty()) {
+                    currentTaskList.addAll(it.first().taskModelList)
+                }
+                val taskGroupModel = taskGroupViewModel.createTaskGroup(category, currentTaskList, backgroundColor)
+                taskGroupViewModel.insertOrUpdateTaskGroup(taskGroupModel)
+            }
         }
         dismiss()
     }
@@ -92,8 +92,11 @@ class TaskDialog(
     private fun getCategoryColor(selectedCategory: String): Int {
         val categories = resources.getStringArray(R.array.categoryColors)
         val categoryColor = categories.filter {it.lowercase().contains(selectedCategory.lowercase()) }
-        val colorResource = resources.getIdentifier(categoryColor.get(0), "color", "com.treaty.dailytask")
-        return resources.getColor(colorResource)
+        if(categoryColor.isNotEmpty()) {
+            val colorResource = resources.getIdentifier(categoryColor[0], "color", requireContext().packageName)
+            return resources.getColor(colorResource)
+        }
+        return resources.getColor(R.color.white)
     }
 
     override fun onDismiss(dialog: DialogInterface) {

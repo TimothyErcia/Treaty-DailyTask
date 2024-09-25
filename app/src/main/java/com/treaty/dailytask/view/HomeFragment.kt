@@ -31,6 +31,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     private lateinit var binding: FragmentHomeBinding
     private lateinit var adapter: TaskViewAdapter
     private val taskGroupViewModel: TaskGroupViewModel by viewModel()
+    private lateinit var taskDialog: TaskDialog
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -58,13 +59,12 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             .collectLatest { data ->
                 adapter = TaskViewAdapter(data, object:TaskViewAdapter.TaskGroupEvent {
                     override fun onClickAdd(index: Int) {
-                        Log.d("TASKGROUP", "onClickAdd: ${data.get(index)}")
-                        val taskDialog = TaskDialog(false, data.get(index).categoryID)
-                        taskDialog.show(childFragmentManager, "sometag")
+                        taskDialog = TaskDialog(data[index].categoryID)
+                        showDialog()
                     }
 
                     override fun onClickRemove(index: Int) {
-                        Log.d("TASKGROUP", "onClickRemove: ")
+                        // TODO() REMOVE TASK
                     }
                 })
                 binding.taskGroupListView.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
@@ -76,8 +76,12 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
     private fun initializeAddTaskGroup() {
         binding.bottomLayout.addTaskGroupBtn.setOnClickListener {
-            val taskDialog = TaskDialog(true)
-            taskDialog.show(childFragmentManager, "sometag")
+            taskDialog = TaskDialog()
+            showDialog()
         }
+    }
+
+    private fun showDialog() {
+        taskDialog.show(childFragmentManager, "sometag")
     }
 }

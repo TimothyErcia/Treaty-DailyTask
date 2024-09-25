@@ -6,6 +6,7 @@ import org.mongodb.kbson.ObjectId
 import java.util.UUID
 
 open class TaskObject() : RealmObject {
+    @PrimaryKey
     var taskId: ObjectId = ObjectId.invoke()
     var price: Int = 0
     var dateAdded: String = ""

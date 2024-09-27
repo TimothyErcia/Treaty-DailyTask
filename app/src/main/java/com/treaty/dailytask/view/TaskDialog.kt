@@ -2,30 +2,23 @@ package com.treaty.dailytask.view
 
 import android.app.Dialog
 import android.content.DialogInterface
-import android.content.pm.PackageInfo
-import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
-import androidx.core.content.PackageManagerCompat
+import android.widget.Toast
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.treaty.dailytask.R
 import com.treaty.dailytask.databinding.TaskDialogBinding
 import com.treaty.dailytask.model.Task.TaskModel
-import com.treaty.dailytask.model.TaskGroup.TaskGroupModel
 import com.treaty.dailytask.viewmodel.TaskGroupViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.koin.androidx.viewmodel.ext.android.viewModel
-import java.time.LocalDateTime
 
 class TaskDialog(
     private val categoryID: String = "",
@@ -34,6 +27,7 @@ class TaskDialog(
     private lateinit var binding: TaskDialogBinding
     private val taskGroupViewModel: TaskGroupViewModel by viewModel()
     private var currentTaskList = mutableListOf<TaskModel>()
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -45,8 +39,8 @@ class TaskDialog(
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        binding = TaskDialogBinding.inflate(LayoutInflater.from(requireContext()))
-        if(categoryID.isNotEmpty()) {
+        binding = TaskDialogBinding.inflate(layoutInflater)
+        if (categoryID.isNotEmpty()) {
             binding.categoryInput.visibility = GONE
         }
         val builder = MaterialAlertDialogBuilder(requireContext(), R.drawable.taskgroup_corners)
@@ -62,22 +56,35 @@ class TaskDialog(
 
     private fun onAdd() {
         val price = binding.priceInput.text.toString()
-        val category = if(categoryID.isEmpty()) binding.categoryInput.selectedItem.toString() else categoryID
+        val category = categoryID.ifEmpty { binding.categoryInput.selectedItem.toString() }
         val backgroundColor = getCategoryColor(category)
-        val newTask = taskGroupViewModel.createNewTask(price.toInt())
-        currentTaskList.add(newTask)
-
-        viewLifecycleOwner.lifecycleScope.launch {
-            taskGroupViewModel.getAllTaskByCategory(category).collectLatest {
-                if(it.isNotEmpty()) {
-                    currentTaskList.addAll(it.first().taskModelList)
-                }
-                val taskGroupModel = taskGroupViewModel.createTaskGroup(category, currentTaskList, backgroundColor)
-                taskGroupViewModel.insertOrUpdateTaskGroup(taskGroupModel)
+        val newTask = taskGroupViewModel.createNewTask(price)
+        newTask.apply {
+            onSuccess {
+                currentTaskList.add(it)
+                insertCurrentTask(category, backgroundColor)
             }
+
+            onFailure { showToast(it.message.toString()) }
         }
         dismiss()
     }
+
+    private fun insertCurrentTask(category: String, backgroundColor: Int) =
+        viewLifecycleOwner.lifecycleScope.launch {
+            taskGroupViewModel.getAllTaskByCategory(category).collectLatest {
+                if (it.isNotEmpty()) {
+                    currentTaskList.addAll(it.first().taskModelList)
+                }
+                val taskGroupModel =
+                    taskGroupViewModel.createTaskGroup(category, currentTaskList, backgroundColor)
+                taskGroupModel.apply {
+                    onSuccess { data -> taskGroupViewModel.insertOrUpdateTaskGroup(data) }
+
+                    onFailure { error -> showToast(error.message.toString()) }
+                }
+            }
+        }
 
     private fun onCancel() {
         dialog?.dismiss()
@@ -85,15 +92,18 @@ class TaskDialog(
 
     private fun initializeCategories() {
         val categories = resources.getStringArray(R.array.categories)
-        val arrayAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, categories)
+        val arrayAdapter =
+            ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, categories)
         binding.categoryInput.adapter = arrayAdapter
     }
 
     private fun getCategoryColor(selectedCategory: String): Int {
         val categories = resources.getStringArray(R.array.categoryColors)
-        val categoryColor = categories.filter {it.lowercase().contains(selectedCategory.lowercase()) }
-        if(categoryColor.isNotEmpty()) {
-            val colorResource = resources.getIdentifier(categoryColor[0], "color", requireContext().packageName)
+        val categoryColor =
+            categories.filter { it.lowercase().contains(selectedCategory.lowercase()) }
+        if (categoryColor.isNotEmpty()) {
+            val colorResource =
+                resources.getIdentifier(categoryColor[0], "color", requireContext().packageName)
             return resources.getColor(colorResource)
         }
         return resources.getColor(R.color.white)
@@ -102,5 +112,9 @@ class TaskDialog(
     override fun onDismiss(dialog: DialogInterface) {
         super.onDismiss(dialog)
         binding.priceInput.setText("")
+    }
+
+    private fun showToast(message: String) {
+        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
     }
 }

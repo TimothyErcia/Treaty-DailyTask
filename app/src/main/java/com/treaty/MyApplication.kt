@@ -3,7 +3,6 @@ package com.treaty
 import android.app.Application
 import com.treaty.dailytask.di.appModule
 import com.treaty.dailytask.di.repositoryModule
-import com.treaty.dailytask.di.taskAppModule
 import com.treaty.dailytask.di.taskGroupModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
@@ -19,7 +18,6 @@ class MyApplication : Application() {
             modules(
                 appModule,
                 repositoryModule,
-                taskAppModule,
                 taskGroupModule
             )
         }

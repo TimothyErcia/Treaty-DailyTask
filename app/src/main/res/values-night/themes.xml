@@ -5,5 +5,6 @@
         <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
         <item name="android:fontFamily">@font/kufam</item>
         <item name="fontFamily">@font/kufam</item>
+        <item name="background">@color/backgroundColor</item>
     </style>
 </resources>

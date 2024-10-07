@@ -59,32 +59,26 @@ class TaskDialog(
         val category = categoryID.ifEmpty { binding.categoryInput.selectedItem.toString() }
         val backgroundColor = getCategoryColor(category)
         val newTask = taskGroupViewModel.createNewTask(price)
-        newTask.apply {
-            onSuccess {
-                currentTaskList.add(it)
-                insertCurrentTask(category, backgroundColor)
-            }
-
-            onFailure { showToast(it.message.toString()) }
-        }
-        dismiss()
+        newTask.onSuccess { res ->
+            currentTaskList.add(res)
+            insertCurrentTask(category, backgroundColor)
+            dismiss()
+        }.onFailure { showToast(it.message.toString()) }
     }
 
-    private fun insertCurrentTask(category: String, backgroundColor: Int) =
-        viewLifecycleOwner.lifecycleScope.launch {
-            taskGroupViewModel.getAllTaskByCategory(category).collectLatest {
-                if (it.isNotEmpty()) {
-                    currentTaskList.addAll(it.first().taskModelList)
-                }
-                val taskGroupModel =
-                    taskGroupViewModel.createTaskGroup(category, currentTaskList, backgroundColor)
-                taskGroupModel.apply {
-                    onSuccess { data -> taskGroupViewModel.insertOrUpdateTaskGroup(data) }
-
-                    onFailure { error -> showToast(error.message.toString()) }
-                }
+    private fun insertCurrentTask(category: String, backgroundColor: Int) = viewLifecycleOwner.lifecycleScope.launch {
+        taskGroupViewModel.getAllTaskByCategory(category).collectLatest {
+            if (it.isNotEmpty()) {
+                currentTaskList.addAll(it.first().taskModelList)
             }
+            val taskGroupModel =
+                taskGroupViewModel.createTaskGroup(category, currentTaskList, backgroundColor)
+            taskGroupModel.onSuccess { res ->
+                val insertRes = taskGroupViewModel.insertOrUpdateTaskGroup(res)
+                showToast(insertRes)
+            }.onFailure { showToast(it.message.toString()) }
         }
+    }
 
     private fun onCancel() {
         dialog?.dismiss()

@@ -1,22 +1,24 @@
 package com.treaty.dailytask.repository.taskgroup
 
-import android.util.Log
-import com.treaty.dailytask.model.TaskGroup.TaskGroupModel
 import com.treaty.dailytask.model.TaskGroup.TaskGroupObject
 import io.realm.kotlin.Realm
 import io.realm.kotlin.UpdatePolicy
+import io.realm.kotlin.exceptions.RealmException
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 
 class TaskGroupRepositoryImpl(private val realm: Realm) : TaskGroupRepository {
-    override suspend fun insertOrUpdate(taskGroupObject: TaskGroupObject) {
-        realm.write {
-            copyToRealm(
-                taskGroupObject,
-                UpdatePolicy.ALL
-            )
+    override suspend fun insertOrUpdate(taskGroupObject: TaskGroupObject): Result<String> {
+        return try {
+            realm.write {
+                copyToRealm(
+                    taskGroupObject,
+                    UpdatePolicy.ALL
+                )
+            }
+            Result.success("Successfully Added")
+        } catch (e: RealmException) {
+            Result.failure(e)
         }
     }
 

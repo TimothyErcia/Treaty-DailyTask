@@ -4,7 +4,7 @@ import com.treaty.dailytask.model.TaskGroup.TaskGroupObject
 import kotlinx.coroutines.flow.Flow
 
 interface TaskGroupRepository {
-    suspend fun insertOrUpdate(taskGroupObject: TaskGroupObject)
+    suspend fun insertOrUpdate(taskGroupObject: TaskGroupObject): Result<String>
 
     suspend fun getAllTaskGroup(): Flow<List<TaskGroupObject>>
 

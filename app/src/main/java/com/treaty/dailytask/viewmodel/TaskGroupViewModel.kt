@@ -8,8 +8,6 @@ import com.treaty.dailytask.model.TaskGroup.TaskGroupModel
 import com.treaty.dailytask.model.TaskGroup.TaskGroupObject
 import com.treaty.dailytask.repository.taskgroup.TaskGroupRepository
 import io.realm.kotlin.ext.toRealmList
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -21,6 +19,9 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class TaskGroupViewModel(private val taskGroupRepository: TaskGroupRepository) : ViewModel() {
@@ -31,15 +32,20 @@ class TaskGroupViewModel(private val taskGroupRepository: TaskGroupRepository) :
             .onStart { getAllTaskGroup() }
             .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
-    suspend fun insertOrUpdateTaskGroup(taskGroupModel: TaskGroupModel) =
-        viewModelScope.launch(Dispatchers.IO) {
+    suspend fun insertOrUpdateTaskGroup(taskGroupModel: TaskGroupModel): String {
+        return runBlocking {
             val list =
                 taskGroupModel.taskModelList
                     .map { TaskObject(it.price, it.dateAdded) }
                     .toRealmList()
-            taskGroupRepository.insertOrUpdate(
-                TaskGroupObject(taskGroupModel.categoryID, list, taskGroupModel.backgroundColor))
+            val insertResult =
+                taskGroupRepository.insertOrUpdate(
+                    TaskGroupObject(
+                        taskGroupModel.categoryID, list, taskGroupModel.backgroundColor))
+
+            insertResult.getOrDefault("Error Message")
         }
+    }
 
     private suspend fun getAllTaskGroup() =
         viewModelScope.launch(Dispatchers.IO) {

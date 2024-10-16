@@ -16,7 +16,8 @@ import com.treaty.dailytask.R
 import com.treaty.dailytask.databinding.TaskDialogBinding
 import com.treaty.dailytask.model.Task.TaskModel
 import com.treaty.dailytask.viewmodel.TaskGroupViewModel
-import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
@@ -26,7 +27,7 @@ class TaskDialog(
 
     private lateinit var binding: TaskDialogBinding
     private val taskGroupViewModel: TaskGroupViewModel by viewModel()
-    private var currentTaskList = mutableListOf<TaskModel>()
+    private val toastMessageResult = MutableStateFlow("")
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -55,29 +56,28 @@ class TaskDialog(
     }
 
     private fun onAdd() {
-        val price = binding.priceInput.text.toString()
-        val category = categoryID.ifEmpty { binding.categoryInput.selectedItem.toString() }
-        val backgroundColor = getCategoryColor(category)
-        val newTask = taskGroupViewModel.createNewTask(price)
-        newTask.onSuccess { res ->
-            currentTaskList.add(res)
-            insertCurrentTask(category, backgroundColor)
-            dismiss()
-        }.onFailure { showToast(it.message.toString()) }
+        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
+            val price = binding.priceInput.text.toString()
+            val category = categoryID.ifEmpty { binding.categoryInput.selectedItem.toString() }
+            val backgroundColor = getCategoryColor(category)
+            val newTask = taskGroupViewModel.createNewTask(price)
+            newTask.onSuccess { res ->
+                val currentTaskList = arrayListOf(res)
+                insertCurrentTask(category, currentTaskList, backgroundColor)
+            }.onFailure { toastMessageResult.value = it.message.toString() }
+
+            showToast(toastMessageResult.value)
+        }
     }
 
-    private fun insertCurrentTask(category: String, backgroundColor: Int) = viewLifecycleOwner.lifecycleScope.launch {
-        taskGroupViewModel.getAllTaskByCategory(category).collectLatest {
-            if (it.isNotEmpty()) {
-                currentTaskList.addAll(it.first().taskModelList)
-            }
-            val taskGroupModel =
-                taskGroupViewModel.createTaskGroup(category, currentTaskList, backgroundColor)
-            taskGroupModel.onSuccess { res ->
-                val insertRes = taskGroupViewModel.insertOrUpdateTaskGroup(res)
-                showToast(insertRes)
-            }.onFailure { showToast(it.message.toString()) }
-        }
+    private suspend fun insertCurrentTask(category: String, currentTaskList: ArrayList<TaskModel>, backgroundColor: Int) {
+        val taskGroupResult =
+            taskGroupViewModel.createTaskGroup(category, currentTaskList, backgroundColor)
+        taskGroupResult.onSuccess { res ->
+            taskGroupViewModel.getCategoryAndInsert(res)
+            toastMessageResult.value = taskGroupViewModel.insertResultMessage.value
+            dismiss()
+        }.onFailure { toastMessageResult.value = it.message.toString() }
     }
 
     private fun onCancel() {

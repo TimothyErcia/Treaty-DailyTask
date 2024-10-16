@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
     alias(libs.plugins.realmAndroid)
+    alias(libs.plugins.kotlinKover)
 }
 
 android {
@@ -68,4 +69,39 @@ dependencies {
     androidTestImplementation(libs.kotlinx.coroutines.test)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+}
+
+kover {
+    reports {
+        // filters for all report types of all build variants
+        filters {
+            excludes {
+                androidGeneratedClasses()
+            }
+        }
+
+        variant("debug") {
+            // verification only for 'debug' build variant
+            verify {
+                rule {
+                    minBound(80)
+                }
+            }
+
+            // filters for all report types only for 'debug' build variant
+            filters {
+                excludes {
+                    androidGeneratedClasses()
+                    classes(
+                        // excludes debug classes
+                        "*.NetworkUtility",
+                        "*.TaskGroupRepository"
+                    )
+                    listOf(
+                        "kotlinx.coroutines.flow.*"
+                    )
+                }
+            }
+        }
+    }
 }

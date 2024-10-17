@@ -97,9 +97,6 @@ kover {
                         "*.NetworkUtility",
                         "*.TaskGroupRepository"
                     )
-                    listOf(
-                        "kotlinx.coroutines.flow.*"
-                    )
                 }
             }
         }

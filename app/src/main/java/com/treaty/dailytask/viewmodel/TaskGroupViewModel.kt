@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.withContext
@@ -35,9 +36,9 @@ class TaskGroupViewModel(private val taskGroupRepository: TaskGroupRepository) :
     private val _insertResultMessage = MutableStateFlow("")
     val insertResultMessage = _insertResultMessage.asStateFlow()
 
-    private suspend fun insertOrUpdateTaskGroup(taskGroupModel: TaskGroupModel, newData: TaskGroupModel) {
+    private suspend fun insertOrUpdateTaskGroup(taskGroupModel: TaskGroupModel) {
         val list =
-            taskGroupModel.taskModelList.plus(newData.taskModelList)
+                taskGroupModel.taskModelList
                 .map { TaskObject(it.price, it.dateAdded) }
                 .toRealmList()
 
@@ -47,7 +48,7 @@ class TaskGroupViewModel(private val taskGroupRepository: TaskGroupRepository) :
                     taskGroupModel.categoryID, list, taskGroupModel.backgroundColor))
         }
 
-        val message = insertResult.getOrDefault("Error Message")
+        val message = insertResult.getOrThrow()
         _insertResultMessage.value = message
     }
 
@@ -67,7 +68,7 @@ class TaskGroupViewModel(private val taskGroupRepository: TaskGroupRepository) :
         taskModelList.sumOf { task -> task.price }
 
     private fun getLastUpdate(taskModelList: List<TaskModel>) =
-        taskModelList.firstOrNull()?.dateAdded ?: ""
+        taskModelList.first().dateAdded
 
     private fun parseTaskGroupObject(taskModelList: List<TaskObject>): List<TaskModel> {
         return taskModelList.map { data ->
@@ -88,16 +89,18 @@ class TaskGroupViewModel(private val taskGroupRepository: TaskGroupRepository) :
             taskGroupRepository
                 .getAllTaskGroupByCategory(newData.categoryID)
                 .flowOn(Dispatchers.IO)
-                .mapLatest {
-                    if(it.isNotEmpty()) {
-                        mapToTaskGroup(it)
-                    } else {
-                        emptyList()
-                    }
-                }.stateIn(viewModelScope)
+                .mapNotNull { mapToTaskGroup(it) }
+                .stateIn(viewModelScope)
         }
 
-        insertOrUpdateTaskGroup(categoryRes.value[0], newData)
+        val appendedList = if(categoryRes.value.isEmpty()) {
+            newData
+        } else {
+            val addedList = categoryRes.value[0].taskModelList.plus(newData.taskModelList)
+            categoryRes.value[0].copy(taskModelList = addedList)
+        }
+
+        insertOrUpdateTaskGroup(appendedList)
     }
 
     fun createNewTask(price: String): Result<TaskModel> {

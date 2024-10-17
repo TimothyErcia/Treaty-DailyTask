@@ -1,17 +1,12 @@
 package com.treaty.dailytask.viewmodel
 
 import com.treaty.dailytask.model.Task.TaskModel
-import com.treaty.dailytask.model.Task.TaskObject
 import com.treaty.dailytask.model.TaskGroup.TaskGroupModel
-import com.treaty.dailytask.model.TaskGroup.TaskGroupObject
+import com.treaty.dailytask.repository.FakeRepository
 import com.treaty.dailytask.repository.taskgroup.TaskGroupRepository
-import io.realm.kotlin.ext.realmListOf
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
@@ -31,11 +26,10 @@ class TaskGroupViewModelUnitTest {
 
     private lateinit var taskGroupViewModel: TaskGroupViewModel
     private var mockTaskGroupModelList = listOf(
-        TaskGroupModel("Food", emptyList(), 100, LocalDateTime.now().toString(), 0),
-        TaskGroupModel("Food", emptyList(), 100, LocalDateTime.now().toString(), 0),
-        TaskGroupModel("Food", emptyList(), 100, LocalDateTime.now().toString(), 0)
+        TaskGroupModel("Food", emptyList(), 100, LocalDateTime.now().toString(), -3937903),
+        TaskGroupModel("Food", emptyList(), 100, LocalDateTime.now().plusMinutes(1).toString(), -3937903),
+        TaskGroupModel("Food", emptyList(), 100, LocalDateTime.now().plusMinutes(1).toString(), -3937903)
     )
-    private val mockTaskGroupModel = TaskGroupModel("Food", emptyList(), 100, LocalDateTime.now().toString(), 0)
     private val mockTaskModel = TaskModel(UUID.randomUUID().toString(), 100, LocalDateTime.now().toString())
     private val testDispatcher = UnconfinedTestDispatcher()
 
@@ -43,7 +37,7 @@ class TaskGroupViewModelUnitTest {
     @Before
     fun setup() {
         Dispatchers.setMain(testDispatcher)
-        fakeRepository = FakeRepositoryImpl()
+        fakeRepository = FakeRepository.FakeRepositoryImpl()
         taskGroupViewModel = TaskGroupViewModel(fakeRepository)
     }
 
@@ -53,17 +47,8 @@ class TaskGroupViewModelUnitTest {
     }
 
     @Test
-    fun `taskGroupViewModel success`() = runTest {
-        backgroundScope.launch(testDispatcher) {
-            taskGroupViewModel.taskGroup.collect()
-        }
-        val task = taskGroupViewModel.taskGroup.value
-        assertTrue(task.isEmpty())
-
-        backgroundScope.launch(testDispatcher) {
-            val task = taskGroupViewModel.insertOrUpdateTaskGroup(mockTaskGroupModel)
-            assertEquals(task, "success")
-
+    fun `taskGroupViewModel success`() = runTest(testDispatcher) {
+        backgroundScope.launch {
             taskGroupViewModel.taskGroup.collect()
             val task2 = taskGroupViewModel.taskGroup.value
             assertTrue(task2.isNotEmpty())
@@ -73,7 +58,7 @@ class TaskGroupViewModelUnitTest {
 
     @Test
     fun `taskGroupViewModel empty list`() = runTest(testDispatcher) {
-        fakeRepository = FakeRepositoryImpl2()
+        fakeRepository = FakeRepository.FakeRepositoryImpl2()
         taskGroupViewModel = TaskGroupViewModel(fakeRepository)
         backgroundScope.launch {
             taskGroupViewModel.taskGroup.collect {
@@ -83,24 +68,19 @@ class TaskGroupViewModelUnitTest {
     }
 
     @Test
-    fun `taskGroupViewModel filtered success`() = runTest {
-        backgroundScope.launch(testDispatcher) {
-            taskGroupViewModel.getAllTaskByCategory("Food").collect {
-                assertTrue(it.isNotEmpty())
-                assertEquals(it.first().totalPrice, 200)
-            }
-        }
+    fun `taskGroupViewModel filtered and insert with filled list success`() = runTest(testDispatcher) {
+        val mockTaskGroupModel = TaskGroupModel("Food", listOf(mockTaskModel), 100, LocalDateTime.now().toString(), -3937903)
+        taskGroupViewModel.getCategoryAndInsert(mockTaskGroupModel)
+        assertEquals(taskGroupViewModel.insertResultMessage.value, "Successfully Added")
     }
 
     @Test
-    fun `taskGroupViewModel filtered empty list`() = runTest {
-        val fakeRepository = FakeRepositoryImpl2()
+    fun `taskGroupViewModel filtered and insert with empty list success`() = runTest(testDispatcher) {
+        fakeRepository = FakeRepository.FakeRepositoryImpl3()
         taskGroupViewModel = TaskGroupViewModel(fakeRepository)
-        backgroundScope.launch(testDispatcher) {
-            taskGroupViewModel.getAllTaskByCategory("Home").collect {
-                assertTrue(it.isEmpty())
-            }
-        }
+        val mockTaskGroupModel = TaskGroupModel("Food", listOf(mockTaskModel), 100, LocalDateTime.now().toString(), -3937903)
+        taskGroupViewModel.getCategoryAndInsert(mockTaskGroupModel)
+        assertEquals(taskGroupViewModel.insertResultMessage.value, "Successfully Added")
     }
 
     @Test
@@ -172,39 +152,4 @@ class TaskGroupViewModelUnitTest {
         assertTrue(task.isFailure)
     }
 
-    inner class FakeRepositoryImpl2 : TaskGroupRepository {
-        override suspend fun insertOrUpdate(taskGroupObject: TaskGroupObject): Result<String> {
-            return Result.failure(Throwable("failed"))
-        }
-
-        override suspend fun getAllTaskGroup(): Flow<List<TaskGroupObject>> {
-            return emptyFlow()
-        }
-
-        override suspend fun getAllTaskGroupByCategory(categoryId: String): Flow<List<TaskGroupObject>> {
-            return emptyFlow()
-        }
-
-    }
-
-    inner class FakeRepositoryImpl : TaskGroupRepository {
-        private val flow = MutableStateFlow<List<TaskGroupObject>>(emptyList())
-        private var listTaskGroup = listOf(
-            TaskGroupObject("Food", realmListOf(TaskObject(100, LocalDateTime.now().plusHours(1).toString())), 0),
-            TaskGroupObject("Food", realmListOf(TaskObject(100, LocalDateTime.now().plusHours(2).toString())), 0),
-        )
-        override suspend fun insertOrUpdate(taskGroupObject: TaskGroupObject): Result<String> {
-            listTaskGroup = listTaskGroup.plus(taskGroupObject)
-            flow.emit(listTaskGroup)
-            return Result.success("success")
-        }
-
-        override suspend fun getAllTaskGroup(): Flow<List<TaskGroupObject>> {
-            return flow
-        }
-
-        override suspend fun getAllTaskGroupByCategory(categoryId: String): Flow<List<TaskGroupObject>> {
-            return flow
-        }
-    }
 }

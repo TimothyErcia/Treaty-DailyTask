@@ -71,7 +71,7 @@ class TaskGroupViewModelUnitTest {
     fun `taskGroupViewModel filtered and insert with filled list success`() = runTest(testDispatcher) {
         val mockTaskGroupModel = TaskGroupModel("Food", listOf(mockTaskModel), 100, LocalDateTime.now().toString(), -3937903)
         taskGroupViewModel.getCategoryAndInsert(mockTaskGroupModel)
-        assertEquals(taskGroupViewModel.insertResultMessage.value, "Successfully Added")
+        assertEquals(taskGroupViewModel.resultMessage.value, "Successfully Added")
     }
 
     @Test
@@ -80,7 +80,7 @@ class TaskGroupViewModelUnitTest {
         taskGroupViewModel = TaskGroupViewModel(fakeRepository)
         val mockTaskGroupModel = TaskGroupModel("Food", listOf(mockTaskModel), 100, LocalDateTime.now().toString(), -3937903)
         taskGroupViewModel.getCategoryAndInsert(mockTaskGroupModel)
-        assertEquals(taskGroupViewModel.insertResultMessage.value, "Successfully Added")
+        assertEquals(taskGroupViewModel.resultMessage.value, "Successfully Added")
     }
 
     @Test
@@ -152,4 +152,27 @@ class TaskGroupViewModelUnitTest {
         assertTrue(task.isFailure)
     }
 
+    @Test
+    fun `delete data by category success`() = runTest(testDispatcher) {
+        backgroundScope.launch {
+            taskGroupViewModel.taskGroup.collect()
+            val task2 = taskGroupViewModel.taskGroup.value
+            assertTrue(task2.isNotEmpty())
+            assertEquals(task2[0].categoryID, "Food")
+        }
+
+        taskGroupViewModel.deleteByCategory("Food")
+        assertTrue(taskGroupViewModel.taskGroup.value.isEmpty())
+        assertEquals(taskGroupViewModel.resultMessage.value, "Category Removed")
+    }
+
+
+    @Test
+    fun `delete data by category fail`() = runTest(testDispatcher) {
+        fakeRepository = FakeRepository.FakeRepositoryImpl2()
+        taskGroupViewModel = TaskGroupViewModel(fakeRepository)
+        taskGroupViewModel.deleteByCategory("Transportation")
+        assertTrue(taskGroupViewModel.taskGroup.value.isEmpty())
+        assertEquals(taskGroupViewModel.resultMessage.value, "Error Message")
+    }
 }

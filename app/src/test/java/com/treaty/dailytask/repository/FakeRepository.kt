@@ -32,6 +32,10 @@ class FakeRepository {
             flow.emit(listTaskGroup)
             return flow
         }
+
+        override suspend fun deleteByCategory(categoryId: String): Result<String> {
+            return Result.success("Category Removed")
+        }
     }
 
     class FakeRepositoryImpl2 : TaskGroupRepository {
@@ -45,6 +49,10 @@ class FakeRepository {
 
         override suspend fun getAllTaskGroupByCategory(categoryId: String): Flow<List<TaskGroupObject>> {
             return emptyFlow()
+        }
+
+        override suspend fun deleteByCategory(categoryId: String): Result<String> {
+            return Result.failure(Throwable("Error Message"))
         }
 
     }
@@ -61,6 +69,10 @@ class FakeRepository {
 
         override suspend fun getAllTaskGroupByCategory(categoryId: String): Flow<List<TaskGroupObject>> {
             return flow
+        }
+
+        override suspend fun deleteByCategory(categoryId: String): Result<String> {
+            return Result.success("Category Removed")
         }
 
     }

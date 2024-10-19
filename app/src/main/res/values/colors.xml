@@ -2,4 +2,24 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!--LIGHT THEMED COLORS-->
+    <color name="backgroundColor">#FFFBE9</color>
+    <color name="fontColorLight">#272727</color>
+
+    <color name="foodCategory">#C3E991</color>
+    <color name="transportationCategory">#89CBFE</color>
+    <color name="personalCategory">#FF9181</color>
+    <color name="homeCategory">#FFB663</color>
+    <color name="condoCategory">#FFE97E</color>
+
+    <!--DARK THEMED COLORS-->
+    <color name="fontColorDark">#FFFFFF</color>
+
+    <color name="foodCategoryDark">#33613A</color>
+    <color name="transportationCategoryDark">#2E6188</color>
+    <color name="personalCategoryDark">#A93D2D</color>
+    <color name="homeCategoryDark">#DA6C07</color>
+    <color name="condoCategoryDark">#DA9207</color>
+
 </resources>

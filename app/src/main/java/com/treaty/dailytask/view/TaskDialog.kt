@@ -75,7 +75,7 @@ class TaskDialog(
             taskGroupViewModel.createTaskGroup(category, currentTaskList, backgroundColor)
         taskGroupResult.onSuccess { res ->
             taskGroupViewModel.getCategoryAndInsert(res)
-            toastMessageResult.value = taskGroupViewModel.insertResultMessage.value
+            toastMessageResult.value = taskGroupViewModel.resultMessage.value
             dismiss()
         }.onFailure { toastMessageResult.value = it.message.toString() }
     }

@@ -31,4 +31,12 @@ class TaskGroupRepositoryImpl(private val realm: Realm) : TaskGroupRepository {
         return realmFlow.map { it.list }
     }
 
+    override suspend fun deleteByCategory(categoryId: String): Result<String> {
+        realm.write {
+            val category = query(TaskGroupObject::class, "categoryID == $0", categoryId).find()
+            delete(category)
+        }
+        return Result.success("Category Removed")
+    }
+
 }

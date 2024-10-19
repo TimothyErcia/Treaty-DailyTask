@@ -33,8 +33,8 @@ class TaskGroupViewModel(private val taskGroupRepository: TaskGroupRepository) :
             .onStart { emitAll(getAllTaskGroup()) }
             .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
-    private val _insertResultMessage = MutableStateFlow("")
-    val insertResultMessage = _insertResultMessage.asStateFlow()
+    private val _resultMessage = MutableStateFlow("")
+    val resultMessage = _resultMessage.asStateFlow()
 
     private suspend fun insertOrUpdateTaskGroup(taskGroupModel: TaskGroupModel) {
         val list =
@@ -49,7 +49,7 @@ class TaskGroupViewModel(private val taskGroupRepository: TaskGroupRepository) :
         }
 
         val message = insertResult.getOrThrow()
-        _insertResultMessage.value = message
+        _resultMessage.value = message
     }
 
     private suspend fun getAllTaskGroup(): Flow<List<TaskGroupModel>> {
@@ -149,4 +149,11 @@ class TaskGroupViewModel(private val taskGroupRepository: TaskGroupRepository) :
                 taskGroup.backgroundColor)
         }
     }
+
+    suspend fun deleteByCategory(categoryId: String) =
+        withContext(Dispatchers.IO) {
+            val message = taskGroupRepository.deleteByCategory(categoryId)
+
+            _resultMessage.value = message.getOrDefault("Error Message")
+        }
 }

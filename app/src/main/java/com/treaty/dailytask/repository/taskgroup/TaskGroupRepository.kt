@@ -9,4 +9,6 @@ interface TaskGroupRepository {
     suspend fun getAllTaskGroup(): Flow<List<TaskGroupObject>>
 
     suspend fun getAllTaskGroupByCategory(categoryId: String): Flow<List<TaskGroupObject>>
+
+    suspend fun deleteByCategory(categoryId: String): Result<String>
 }

@@ -4,6 +4,7 @@ import com.treaty.dailytask.model.Task.TaskObject
 import com.treaty.dailytask.model.TaskGroup.TaskGroupObject
 import com.treaty.dailytask.repository.taskgroup.TaskGroupRepository
 import com.treaty.dailytask.repository.taskgroup.TaskGroupRepositoryImpl
+import com.treaty.dailytask.utility.AlarmUtility
 import com.treaty.dailytask.utility.NetworkUtility
 import com.treaty.dailytask.viewmodel.TaskGroupViewModel
 import io.realm.kotlin.Realm
@@ -25,6 +26,7 @@ val appModule = module {
             .build()
         Realm.open(config)
     }
+    single { AlarmUtility(androidContext()) }
 }
 
 val repositoryModule = module {

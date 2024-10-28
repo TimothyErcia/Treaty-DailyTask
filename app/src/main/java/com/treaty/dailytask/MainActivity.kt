@@ -5,15 +5,16 @@ import android.util.Log
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowCompat
+import androidx.lifecycle.lifecycleScope
+import com.treaty.dailytask.utility.AlarmUtility
 import com.treaty.dailytask.utility.NetworkUtility
-import com.treaty.dailytask.viewmodel.TaskGroupViewModel
+import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
-import org.koin.androidx.viewmodel.ext.android.viewModel
 
 
 class MainActivity : AppCompatActivity() {
     private val networkUtility: NetworkUtility by inject()
-    private val taskGroupViewModel: TaskGroupViewModel by viewModel()
+    private val alarmUtility: AlarmUtility by inject()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -24,5 +25,8 @@ class MainActivity : AppCompatActivity() {
             false
         )
         Log.d("NETWORK", "onCreate: ${networkUtility.isOnline()}")
+        lifecycleScope.launch {
+            alarmUtility.startAlarm()
+        }
     }
 }

@@ -17,17 +17,14 @@ class AlarmUtility(private val context: Context) {
         alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         calendar = Calendar.getInstance().apply {
             set(Calendar.HOUR_OF_DAY, 22)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
         }
     }
 
     fun startAlarm() {
         intent = Intent(context, AlarmReceivers::class.java)
-        pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
-
+        pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
         alarmManager?.setRepeating(
-            AlarmManager.RTC_WAKEUP,
+            AlarmManager.RTC,
             calendar.timeInMillis,
             AlarmManager.INTERVAL_DAY,
             pendingIntent

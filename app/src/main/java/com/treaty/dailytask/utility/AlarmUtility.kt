@@ -25,9 +25,10 @@ class AlarmUtility(private val context: Context) {
 
     fun startAlarm() {
         intent = Intent(context, AlarmReceivers::class.java)
-        pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
+        pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+
         alarmManager?.setRepeating(
-            AlarmManager.RTC,
+            AlarmManager.RTC_WAKEUP,
             calendar.timeInMillis,
             AlarmManager.INTERVAL_DAY,
             pendingIntent

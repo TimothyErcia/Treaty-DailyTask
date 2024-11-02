@@ -79,12 +79,9 @@ kover {
                 androidGeneratedClasses()
                 classes(
                     // excludes debug classes
-                    "*.NetworkUtility",
-                    "*.TaskGroupRepository",
-                    "*.ReminderRepository",
-                    "*.AlarmUtility",
+                    "*.utility.*",
+                    "*.repository.*",
                     "*.AlarmReceivers",
-                    "*.LocalNotificationUtility"
                 )
             }
         }
@@ -94,6 +91,18 @@ kover {
             verify {
                 rule {
                     minBound(80)
+                }
+            }
+
+            // filters for all report types only for 'debug' build variant
+            filters {
+                excludes {
+                    androidGeneratedClasses()
+                    classes(
+                        // excludes debug classes
+                        "*.NetworkUtility",
+                        "*.TaskGroupRepository"
+                    )
                 }
             }
         }

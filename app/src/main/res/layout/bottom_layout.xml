@@ -23,7 +23,6 @@
             android:layout_height="wrap_content"
             android:fontFamily="@font/inter"
             android:text="Total Spending"
-            android:textColor="@color/white"
             android:paddingTop="5dp"
             android:textSize="15sp"/>
 
@@ -33,7 +32,6 @@
             android:layout_height="40sp"
             android:fontFamily="@font/inter"
             android:text="$ 0.00"
-            android:textColor="@color/white"
             android:textSize="27sp"
             android:translationY="-18dp" />
 

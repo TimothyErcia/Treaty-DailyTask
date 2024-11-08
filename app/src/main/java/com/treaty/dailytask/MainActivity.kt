@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.lifecycleScope
 import com.treaty.dailytask.model.Reminder
 import com.treaty.dailytask.repository.reminder.ReminderRepository
@@ -27,6 +28,7 @@ class MainActivity : AppCompatActivity() {
             window,
             false
         )
+        WindowInsetsControllerCompat(window, window.decorView).isAppearanceLightStatusBars = true
         Log.d("NETWORK", "onCreate: ${networkUtility.isOnline()}")
         lifecycleScope.launch {
             val repo = reminderRepository.getReminderStatus()

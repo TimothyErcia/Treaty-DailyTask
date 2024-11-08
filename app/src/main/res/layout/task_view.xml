@@ -33,7 +33,7 @@
             android:layout_height="96sp"
             android:text="$ PRICE"
             android:textSize="61sp"
-            android:translationY="-10dp" />
+            android:translationY="-30dp" />
 
         <TextView
             android:id="@+id/lastUpdateTxt"
@@ -41,7 +41,7 @@
             android:layout_height="22sp"
             android:text="Last added date: 8/19/2024"
             android:textSize="12sp"
-            android:translationY="-27dp" />
+            android:translationY="-40dp" />
 
     </LinearLayout>
 

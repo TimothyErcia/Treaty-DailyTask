@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="138dp"
+    android:layout_height="130dp"
     android:padding="10sp"
     android:layout_marginBottom="14sp"
     android:id="@+id/taskViewLayout"
@@ -30,10 +30,10 @@
         <TextView
             android:id="@+id/priceTxt"
             android:layout_width="match_parent"
-            android:layout_height="105sp"
+            android:layout_height="96sp"
             android:text="$ PRICE"
             android:textSize="61sp"
-            android:translationY="-28dp" />
+            android:translationY="-30dp" />
 
         <TextView
             android:id="@+id/lastUpdateTxt"
@@ -41,7 +41,7 @@
             android:layout_height="22sp"
             android:text="Last added date: 8/19/2024"
             android:textSize="12sp"
-            android:translationY="-43dp" />
+            android:translationY="-40dp" />
 
     </LinearLayout>
 

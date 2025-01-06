@@ -80,7 +80,9 @@ kover {
                 classes(
                     // excludes debug classes
                     "*.utility.*",
-                    "*.repository.*",
+                    "*.view.*",
+                    "*.di.*",
+                    "*.model.*",
                     "*.AlarmReceivers",
                 )
             }

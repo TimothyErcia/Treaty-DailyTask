@@ -61,23 +61,18 @@ class TaskDialog(
             val category = categoryID.ifEmpty { binding.categoryInput.selectedItem.toString() }
             val backgroundColor = getCategoryColor(category)
             val newTask = taskGroupViewModel.createNewTask(price)
-            newTask.onSuccess { res ->
-                val currentTaskList = arrayListOf(res)
-                insertCurrentTask(category, currentTaskList, backgroundColor)
+            newTask.onSuccess { task ->
+                insertCurrentTask(category, task, backgroundColor)
             }.onFailure { toastMessageResult.value = it.message.toString() }
 
             showToast(toastMessageResult.value)
         }
     }
 
-    private suspend fun insertCurrentTask(category: String, currentTaskList: ArrayList<TaskModel>, backgroundColor: Int) {
-        val taskGroupResult =
-            taskGroupViewModel.createTaskGroup(category, currentTaskList, backgroundColor)
-        taskGroupResult.onSuccess { res ->
-            taskGroupViewModel.getCategoryAndInsert(res)
-            toastMessageResult.value = taskGroupViewModel.resultMessage.value
-            dismiss()
-        }.onFailure { toastMessageResult.value = it.message.toString() }
+    private suspend fun insertCurrentTask(category: String, newTask: TaskModel, backgroundColor: Int) {
+        taskGroupViewModel.getCategoryAndInsert(category, newTask, backgroundColor)
+        toastMessageResult.value = taskGroupViewModel.resultMessage.value
+        dismiss()
     }
 
     private fun onCancel() {

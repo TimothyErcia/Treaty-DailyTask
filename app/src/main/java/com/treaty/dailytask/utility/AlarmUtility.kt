@@ -16,10 +16,9 @@ class AlarmUtility(private val context: Context) {
     init {
         alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         calendar = Calendar.getInstance().apply {
-            set(Calendar.HOUR, 8)
+            set(Calendar.HOUR_OF_DAY, 19)
             set(Calendar.MINUTE, 0)
             set(Calendar.SECOND, 0)
-            set(Calendar.AM_PM, Calendar.PM)
         }
     }
 
@@ -27,7 +26,7 @@ class AlarmUtility(private val context: Context) {
         intent = Intent(context, AlarmReceivers::class.java)
         pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
         alarmManager?.setRepeating(
-            AlarmManager.ELAPSED_REALTIME,
+            AlarmManager.RTC_WAKEUP,
             calendar.timeInMillis,
             AlarmManager.INTERVAL_DAY,
             pendingIntent

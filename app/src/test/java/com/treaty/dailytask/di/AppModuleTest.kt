@@ -1,6 +1,7 @@
 package com.treaty.dailytask.di
 
 import android.content.Context
+import com.treaty.dailytask.repository.reminder.ReminderDAO
 import com.treaty.dailytask.viewmodel.TaskGroupViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -47,6 +48,7 @@ class AppModuleTest {
         appModuleDependency.verify(
             listOf(
                 Context::class,
+                ReminderDAO::class
             )
         )
     }

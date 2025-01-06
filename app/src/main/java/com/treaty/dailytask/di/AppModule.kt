@@ -3,6 +3,8 @@ package com.treaty.dailytask.di
 import com.treaty.dailytask.model.Reminder
 import com.treaty.dailytask.model.Task.TaskObject
 import com.treaty.dailytask.model.TaskGroup.TaskGroupObject
+import com.treaty.dailytask.repository.reminder.ReminderDAO
+import com.treaty.dailytask.repository.reminder.ReminderRepositoryImpl
 import com.treaty.dailytask.repository.taskgroup.TaskGroupDAO
 import com.treaty.dailytask.repository.taskgroup.TaskGroupRepositoryImpl
 import com.treaty.dailytask.utility.AlarmUtility
@@ -29,10 +31,12 @@ val appModule = module {
         Realm.open(config)
     }
     single { AlarmUtility(androidContext()) }
+    single { ReminderRepositoryImpl(get<ReminderDAO>()) }
     single { TaskGroupRepositoryImpl(get<TaskGroupDAO>()) }
 }
 
 val repositoryModule = module {
+    single { ReminderDAO(get()) }
     single { TaskGroupDAO(get()) }
 }
 

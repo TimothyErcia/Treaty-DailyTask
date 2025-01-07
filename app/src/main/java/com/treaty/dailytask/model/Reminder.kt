@@ -1,19 +1,17 @@
 package com.treaty.dailytask.model
 
-import io.realm.kotlin.types.RealmInstant
 import io.realm.kotlin.types.RealmObject
-import io.realm.kotlin.types.annotations.Ignore
 import io.realm.kotlin.types.annotations.PrimaryKey
-import org.mongodb.kbson.ObjectId
-import java.util.Date
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 
-class Reminder : RealmObject {
+class Reminder() : RealmObject {
     @PrimaryKey
-    var reminderId: ObjectId = ObjectId.invoke()
+    var reminderId: String = "Reminder Notification"
+    var dateOfTrigger: String = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC).toString()
+    var isCompleted: Boolean = false
 
-    @Ignore
-    var statusId: Status? = null
-
-    var dateOfTrigger: RealmInstant = RealmInstant.now()
-    var description: String = ""
+    constructor(isCompleted: Boolean): this() {
+        this.isCompleted = isCompleted
+    }
 }

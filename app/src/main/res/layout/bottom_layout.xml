@@ -21,9 +21,8 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:fontFamily="@font/inter"
+            style="@style/bottom_textStyle"
             android:text="Total Spending"
-            android:textColor="@color/white"
             android:paddingTop="5dp"
             android:textSize="15sp"/>
 
@@ -31,11 +30,10 @@
             android:id="@+id/totalSpendingTxt"
             android:layout_width="match_parent"
             android:layout_height="40sp"
-            android:fontFamily="@font/inter"
+            style="@style/bottom_textStyle"
             android:text="$ 0.00"
-            android:textColor="@color/white"
             android:textSize="27sp"
-            android:translationY="-18dp" />
+            android:translationY="-5dp" />
 
     </LinearLayout>
 

@@ -4,6 +4,7 @@ import com.treaty.dailytask.model.Task.TaskModel
 import com.treaty.dailytask.model.Task.TaskObject
 import com.treaty.dailytask.model.TaskGroup.TaskGroupModel
 import com.treaty.dailytask.model.TaskGroup.TaskGroupObject
+import com.treaty.dailytask.repository.FakeRepository
 import com.treaty.dailytask.repository.taskgroup.TaskGroupDAO
 import com.treaty.dailytask.repository.taskgroup.TaskGroupRepositoryImpl
 import io.realm.kotlin.Realm
@@ -196,5 +197,21 @@ class TaskGroupViewModelUnitTest {
         taskGroupRepositoryImpl.deleteByCategory("Food")
         assertTrue(taskGroupViewModel.taskGroup.value.isEmpty())
         assertEquals(taskGroupViewModel.resultMessage.value, "Category Removed")
+    }
+
+    @Test
+    fun `deleteAll method call and return Result success`() = runTest(testDispatcher) {
+        taskGroupRepositoryImpl = TaskGroupRepositoryImpl(FakeRepository.FakeRepositoryDAO())
+        taskGroupViewModel = TaskGroupViewModel(taskGroupRepositoryImpl)
+        backgroundScope.launch {
+            taskGroupViewModel.taskGroup.collect()
+            val task2 = taskGroupViewModel.taskGroup.value
+            assertTrue(task2.isNotEmpty())
+            assertEquals(task2[0].categoryID, "Food")
+        }
+        taskGroupViewModel.deleteAll()
+        taskGroupRepositoryImpl.deleteAll()
+        assertTrue(taskGroupViewModel.taskGroup.value.isEmpty())
+        assertEquals(taskGroupViewModel.resultMessage.value, "Successfully removed All")
     }
 }

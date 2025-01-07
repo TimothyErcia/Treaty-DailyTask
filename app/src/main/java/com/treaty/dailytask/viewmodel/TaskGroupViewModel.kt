@@ -105,4 +105,9 @@ class TaskGroupViewModel(private val taskGroupRepositoryImpl: TaskGroupRepositor
 
             _resultMessage.value = message.getOrThrow()
         }
+
+    suspend fun deleteAll() = withContext(Dispatchers.IO) {
+        val message = taskGroupRepositoryImpl.deleteAll()
+        _resultMessage.value = message.getOrThrow()
+    }
 }

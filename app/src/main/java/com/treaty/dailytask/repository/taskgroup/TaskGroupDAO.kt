@@ -47,4 +47,11 @@ class TaskGroupDAO (private val realm: Realm) : TaskGroupRepository {
         }
         return Result.success("Category Removed")
     }
+
+    override suspend fun deleteAllTaskGroup(): Result<String> {
+        realm.write {
+            deleteAll()
+        }
+        return Result.success("Successfully removed All")
+    }
 }

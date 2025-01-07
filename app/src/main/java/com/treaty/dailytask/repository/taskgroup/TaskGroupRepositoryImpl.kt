@@ -73,4 +73,8 @@ class TaskGroupRepositoryImpl(private val taskGroupDAO: TaskGroupRepository) {
             TaskModel(data.taskId.toString(), data.price, data.dateAdded)
         }
     }
+
+    suspend fun deleteAll(): Result<String> {
+        return taskGroupDAO.deleteAllTaskGroup()
+    }
 }

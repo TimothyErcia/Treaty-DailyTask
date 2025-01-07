@@ -105,4 +105,11 @@ class TaskGroupRepositoryImplTest {
         val res = taskGroupRepositoryImpl.deleteByCategory("")
         assertTrue(res.isFailure)
     }
+
+    @Test
+    fun `deleteAll returns Result success`() = runTest(testDispatcher) {
+        val res = taskGroupRepositoryImpl.deleteAll()
+        assertTrue(res.isSuccess)
+        assertEquals(res.getOrThrow(), "Successfully removed All")
+    }
 }

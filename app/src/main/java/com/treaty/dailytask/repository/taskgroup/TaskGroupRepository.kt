@@ -12,4 +12,6 @@ interface TaskGroupRepository {
     suspend fun updateByCategory(categoryId: String, newData: TaskObject): Result<String>
 
     suspend fun deleteByCategory(categoryId: String): Result<String>
+
+    suspend fun deleteAllTaskGroup(): Result<String>
 }

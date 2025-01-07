@@ -82,7 +82,7 @@ kover {
                     "*.utility.*",
                     "*.view.*",
                     "*.di.*",
-                    "*.model.*",
+//                    "*.model.*",
                     "*.AlarmReceivers",
                 )
             }

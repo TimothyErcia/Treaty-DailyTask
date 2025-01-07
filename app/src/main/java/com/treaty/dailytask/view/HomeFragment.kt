@@ -38,13 +38,12 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initializeAddTaskGroup()
-
+        initializeDeleteAll()
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 initializeTaskGroup()
             }
         }
-
     }
 
     private suspend fun initializeTaskGroup() {
@@ -70,6 +69,12 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                 binding.taskGroupListView.adapter = adapter
 
                 binding.bottomLayout.totalSpendingTxt.text = "$ ${taskGroupViewModel.getTotalSum(data)}.00"
+
+                binding.headerLayout.deleteAllBtn.visibility = if(taskGroupViewModel.taskGroup.value.isNotEmpty()) {
+                    View.VISIBLE
+                } else {
+                    View.GONE
+                }
             }
     }
 
@@ -86,5 +91,16 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
     private fun showToast(message: String) {
         Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+    }
+
+    private fun initializeDeleteAll() {
+        binding.headerLayout.deleteAllBtn.setOnClickListener {
+            viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
+                withContext(Dispatchers.IO) {
+                    taskGroupViewModel.deleteAll()
+                }
+                showToast(taskGroupViewModel.resultMessage.value)
+            }
+        }
     }
 }

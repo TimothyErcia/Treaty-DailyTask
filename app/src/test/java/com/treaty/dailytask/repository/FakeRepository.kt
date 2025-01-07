@@ -36,5 +36,9 @@ class FakeRepository {
         override suspend fun deleteByCategory(categoryId: String): Result<String> {
             return Result.success("Category Removed")
         }
+
+        override suspend fun deleteAllTaskGroup(): Result<String> {
+            return Result.success("Successfully removed All")
+        }
     }
 }

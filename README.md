@@ -48,4 +48,11 @@ Build a mobile application that supports Android and iOS which collects all the 
     4. Testing Library Dependency
        
 3. Layout & Design
+
+App Eraser (HIGH LEVEL DESIGN)  https://app.eraser.io/workspace/1kydQuEFbIxhYKqdvoqB
+
+Figma Design (LAYOUT) 
+https://www.figma.com/design/OFVeJ0ssLEdo2cbSf9ZGk3/Treaty-Daily-Design
+
+
 4. CI/CD Deployment Status

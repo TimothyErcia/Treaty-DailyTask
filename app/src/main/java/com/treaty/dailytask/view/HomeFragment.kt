@@ -4,14 +4,15 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.treaty.dailytask.R
 import com.treaty.dailytask.databinding.FragmentHomeBinding
+import com.treaty.dailytask.utility.CustomSnackBar
 import com.treaty.dailytask.viewmodel.TaskGroupViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
@@ -51,7 +52,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             .collectLatest { data ->
                 adapter = TaskViewAdapter(data, object:TaskViewAdapter.TaskGroupEvent {
                     override fun onClickAdd(index: Int) {
-                        taskDialog = TaskDialog(data[index].categoryID)
+                        taskDialog = TaskDialog(data[index].categoryID, taskGroupViewModel = taskGroupViewModel)
                         showDialog()
                     }
 
@@ -60,7 +61,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                             withContext(Dispatchers.IO) {
                                 taskGroupViewModel.deleteByCategory(data[index].categoryID)
                             }
-                            showToast(taskGroupViewModel.resultMessage.value)
+                            showToast(binding.root)
                         }
                         binding.taskGroupListView.removeViewAt(index)
                     }
@@ -80,17 +81,30 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
     private fun initializeAddTaskGroup() {
         binding.bottomLayout.addTaskGroupBtn.setOnClickListener {
-            taskDialog = TaskDialog()
+            taskDialog = TaskDialog(taskGroupViewModel = taskGroupViewModel)
             showDialog()
         }
     }
 
     private fun showDialog() {
         taskDialog.show(childFragmentManager, "sometag")
+        childFragmentManager.registerFragmentLifecycleCallbacks(object: FragmentManager.FragmentLifecycleCallbacks() {
+            override fun onFragmentDestroyed(fm: FragmentManager, f: Fragment) {
+                super.onFragmentDestroyed(fm, f)
+                showToast(binding.root)
+                childFragmentManager.unregisterFragmentLifecycleCallbacks(this)
+            }
+        }, false)
     }
 
-    private fun showToast(message: String) {
-        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+    private fun showToast(view: View) {
+        val result = taskGroupViewModel.resultMessage.value
+        if(result.statusMessage.isNotEmpty()) {
+            CustomSnackBar(result.statusMessage, view)
+                .addCustomView(requireContext())
+                .isSuccessful(result.status)
+                .show()
+        }
     }
 
     private fun initializeDeleteAll() {
@@ -99,7 +113,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                 withContext(Dispatchers.IO) {
                     taskGroupViewModel.deleteAll()
                 }
-                showToast(taskGroupViewModel.resultMessage.value)
+                showToast(it)
             }
         }
     }

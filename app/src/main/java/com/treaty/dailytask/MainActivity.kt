@@ -42,8 +42,8 @@ class MainActivity : AppCompatActivity() {
     }
     private suspend fun checkAlarm() {
         val repo = reminderRepositoryImpl.getReminderStatus()
-        Log.d("TAG", "checkAlarm: CURRENT ${LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)}")
-        Log.d("TAG", "checkAlarm: TRIGGER ${repo?.dateOfTrigger?.toLong()}")
+//        Log.d("TAG", "checkAlarm: CURRENT ${LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)}")
+//        Log.d("TAG", "checkAlarm: TRIGGER ${repo?.dateOfTrigger?.toLong()}")
         if(repo != null) {
             val triggerDate =
                 repo.dateOfTrigger.toLong()

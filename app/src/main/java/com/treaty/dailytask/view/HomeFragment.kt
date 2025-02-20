@@ -1,5 +1,6 @@
 package com.treaty.dailytask.view
 
+import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -97,9 +98,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             object : FragmentManager.FragmentLifecycleCallbacks() {
                 override fun onFragmentDestroyed(fm: FragmentManager, f: Fragment) {
                     super.onFragmentDestroyed(fm, f)
-                    viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
-                        showToast()
-                    }
+                    viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Main) { showToast() }
                     childFragmentManager.unregisterFragmentLifecycleCallbacks(this)
                 }
             },
@@ -110,18 +109,22 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         val result = taskGroupViewModel.resultMessage.value
         if (result.statusMessage.isNotEmpty()) {
             binding.customSnackbar.root.visibility = View.VISIBLE
+            binding.customSnackbar.snackbarLayout.backgroundTintList =
+                ColorStateList.valueOf(getColor(result.statusValue))
             binding.customSnackbar.snackbarText.text = result.statusMessage
             binding.customSnackbar.root.translationY = 500f
             binding.customSnackbar.root
                 .animate()
                 .translationY(500f)
-                .setDuration(1000)
+                .setDuration(950)
                 .translationY(0f)
-           delay(3000)
-           binding.customSnackbar.root.animate()
-               .translationY(0f)
-               .setDuration(1000)
-               .translationY(500f)
+            delay(2000)
+            binding.customSnackbar.root
+                .animate()
+                .translationY(0f)
+                .setDuration(800)
+                .translationY(500f)
+            delay(1000)
             binding.customSnackbar.root.visibility = View.GONE
         }
     }
@@ -133,5 +136,12 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                 showToast()
             }
         }
+    }
+
+    private fun getColor(statusValue: Boolean): Int {
+        if (statusValue) {
+            return resources.getColor(R.color.foodCategory)
+        }
+        return resources.getColor(R.color.personalCategory)
     }
 }

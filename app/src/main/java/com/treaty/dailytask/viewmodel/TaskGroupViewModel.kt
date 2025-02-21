@@ -2,6 +2,7 @@ package com.treaty.dailytask.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.treaty.dailytask.model.Status
 import com.treaty.dailytask.model.Task.TaskModel
 import com.treaty.dailytask.model.TaskGroup.TaskGroupModel
 import com.treaty.dailytask.repository.taskgroup.TaskGroupRepositoryImpl
@@ -26,7 +27,7 @@ class TaskGroupViewModel(private val taskGroupRepositoryImpl: TaskGroupRepositor
             .onStart { emitAll(getAllTaskGroup()) }
             .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
-    private val _resultMessage = MutableStateFlow("")
+    private val _resultMessage = MutableStateFlow(Status())
     val resultMessage = _resultMessage.asStateFlow()
 
     private suspend fun insertOrUpdateTaskGroup(taskGroupModel: TaskGroupModel) {
@@ -34,8 +35,7 @@ class TaskGroupViewModel(private val taskGroupRepositoryImpl: TaskGroupRepositor
             taskGroupRepositoryImpl.insertOrUpdate(taskGroupModel)
         }
 
-        val message = insertResult.getOrThrow()
-        _resultMessage.value = message
+        setMessage(insertResult)
     }
 
     private suspend fun getAllTaskGroup(): Flow<List<TaskGroupModel>> {
@@ -57,7 +57,7 @@ class TaskGroupViewModel(private val taskGroupRepositoryImpl: TaskGroupRepositor
         }
 
         categoryRes.onSuccess { message ->
-            _resultMessage.value = message
+            setMessage(categoryRes)
         }.onFailure {
             val taskGroupModel = createTaskGroup(categoryId, listOf(newData), backgroundColor)
             insertOrUpdateTaskGroup(taskGroupModel.getOrThrow())
@@ -103,11 +103,17 @@ class TaskGroupViewModel(private val taskGroupRepositoryImpl: TaskGroupRepositor
         withContext(Dispatchers.IO) {
             val message = taskGroupRepositoryImpl.deleteByCategory(categoryId)
 
-            _resultMessage.value = message.getOrThrow()
+            setMessage(message)
         }
 
     suspend fun deleteAll() = withContext(Dispatchers.IO) {
         val message = taskGroupRepositoryImpl.deleteAll()
-        _resultMessage.value = message.getOrThrow()
+
+        setMessage(message)
+    }
+
+    private fun setMessage(result: Result<String>) {
+        val message = result.getOrThrow()
+        _resultMessage.value = Status(message, result.isSuccess)
     }
 }

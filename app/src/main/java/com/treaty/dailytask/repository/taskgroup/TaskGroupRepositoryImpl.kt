@@ -53,20 +53,21 @@ class TaskGroupRepositoryImpl(private val taskGroupDAO: TaskGroupRepository) {
                 taskModelList,
                 getTotalPrice(taskModelList),
                 parseDate(getLastUpdate(taskModelList)),
-                taskGroup.backgroundColor)
+                taskGroup.backgroundColor,
+                getLastPrice(taskModelList))
         }
     }
 
     private fun parseDate(date: String): String {
         val localDate = LocalDateTime.parse(date)
-        return localDate.format(DateTimeFormatter.ofPattern("dd MMM yyyy HH:mm "))
+        return localDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
     }
 
     private fun getTotalPrice(taskModelList: List<TaskModel>): Int =
         taskModelList.sumOf { task -> task.price }
 
     private fun getLastUpdate(taskModelList: List<TaskModel>) =
-        taskModelList.first().dateAdded
+        taskModelList.last().dateAdded
 
     private fun parseTaskGroupObject(taskModelList: List<TaskObject>): List<TaskModel> {
         return taskModelList.map { data ->
@@ -77,4 +78,7 @@ class TaskGroupRepositoryImpl(private val taskGroupDAO: TaskGroupRepository) {
     suspend fun deleteAll(): Result<String> {
         return taskGroupDAO.deleteAllTaskGroup()
     }
+
+    private fun getLastPrice(taskModelList: List<TaskModel>): Int =
+        taskModelList.last().price
 }

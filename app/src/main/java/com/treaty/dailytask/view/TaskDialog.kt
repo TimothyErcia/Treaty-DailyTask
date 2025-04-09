@@ -7,6 +7,7 @@ import android.view.View
 import android.view.View.GONE
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
+import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -23,6 +24,8 @@ class TaskDialog(
 ) : DialogFragment() {
 
     private lateinit var binding: TaskDialogBinding
+    private var accumulatedPrice: Int = 0
+    private var price: String = ""
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -47,14 +50,18 @@ class TaskDialog(
     private fun initializeUI() {
         binding.cancelBtn.setOnClickListener { onCancel() }
         binding.proceedBtn.setOnClickListener { onAdd() }
+        binding.addAccumulationBtn.setOnClickListener { onAddAccumulation() }
+        binding.resetAccumulationBtn.setOnClickListener { onResetAccumulation() }
+        binding.priceInput.doAfterTextChanged { it -> price = it.toString()}
     }
 
     private fun onAdd() {
         viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
-            val price = binding.priceInput.text.toString()
             val category = categoryID.ifEmpty { binding.categoryInput.selectedItem.toString() }
             val backgroundColor = getCategoryColor(category)
-            val newTask = taskGroupViewModel.createNewTask(price)
+
+            val finalPrice = if(accumulatedPrice > 0) accumulatedPrice.toString() else { price }
+            val newTask = taskGroupViewModel.createNewTask(finalPrice)
             newTask.onSuccess { task ->
                 insertCurrentTask(category, task, backgroundColor)
             }
@@ -87,5 +94,18 @@ class TaskDialog(
             return resources.getColor(colorResource, null)
         }
         return resources.getColor(R.color.white, null)
+    }
+
+    private fun onAddAccumulation() {
+        accumulatedPrice += price.toInt()
+        binding.priceAccumulationTxt.text = "Total: $${accumulatedPrice}"
+        binding.priceInput.setText("")
+    }
+
+    private fun onResetAccumulation() {
+        accumulatedPrice = 0
+        price = ""
+        binding.priceInput.setText("")
+        binding.priceAccumulationTxt.text = "Total: "
     }
 }

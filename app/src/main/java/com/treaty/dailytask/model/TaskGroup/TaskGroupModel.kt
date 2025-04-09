@@ -8,4 +8,5 @@ data class TaskGroupModel(
     var totalPrice: Int = 0,
     var lastUpdate: String = "",
     var backgroundColor: Int = 0,
+    var lastPrice: Int = 0
 )

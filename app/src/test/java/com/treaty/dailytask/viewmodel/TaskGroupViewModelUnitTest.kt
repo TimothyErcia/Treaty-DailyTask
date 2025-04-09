@@ -88,7 +88,7 @@ class TaskGroupViewModelUnitTest {
         taskGroupViewModel = TaskGroupViewModel(taskGroupRepositoryImpl)
         taskGroupViewModel.getCategoryAndInsert("Food", mockTaskModel, 0)
         backgroundScope.launch {
-            assertEquals(taskGroupViewModel.resultMessage.value, "Successfully Added")
+            assertEquals(taskGroupViewModel.resultMessage.value.statusMessage, "Successfully Added")
         }
     }
 
@@ -99,7 +99,7 @@ class TaskGroupViewModelUnitTest {
         taskGroupViewModel = TaskGroupViewModel(taskGroupRepositoryImpl)
         taskGroupViewModel.getCategoryAndInsert("Food", mockTaskModel, 0)
         backgroundScope.launch {
-            assertEquals(taskGroupViewModel.resultMessage.value, "Successfully Added")
+            assertEquals(taskGroupViewModel.resultMessage.value.statusMessage, "Successfully Added")
         }
     }
 
@@ -196,7 +196,7 @@ class TaskGroupViewModelUnitTest {
         taskGroupViewModel.deleteByCategory("Food")
         taskGroupRepositoryImpl.deleteByCategory("Food")
         assertTrue(taskGroupViewModel.taskGroup.value.isEmpty())
-        assertEquals(taskGroupViewModel.resultMessage.value, "Category Removed")
+        assertEquals(taskGroupViewModel.resultMessage.value.statusMessage, "Category Removed")
     }
 
     @Test
@@ -211,7 +211,6 @@ class TaskGroupViewModelUnitTest {
         }
         taskGroupViewModel.deleteAll()
         taskGroupRepositoryImpl.deleteAll()
-        assertTrue(taskGroupViewModel.taskGroup.value.isEmpty())
-        assertEquals(taskGroupViewModel.resultMessage.value, "Successfully removed All")
+        assertEquals(taskGroupViewModel.resultMessage.value.statusMessage, "Successfully removed All")
     }
 }

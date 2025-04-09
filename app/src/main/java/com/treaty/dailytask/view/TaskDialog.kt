@@ -99,6 +99,7 @@ class TaskDialog(
     private fun onAddAccumulation() {
         accumulatedPrice += price.toInt()
         binding.priceAccumulationTxt.text = "Total: $${accumulatedPrice}"
+        binding.priceInput.setText("")
     }
 
     private fun onResetAccumulation() {

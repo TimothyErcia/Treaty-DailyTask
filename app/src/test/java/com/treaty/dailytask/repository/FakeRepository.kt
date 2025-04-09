@@ -23,6 +23,7 @@ class FakeRepository {
         }
 
         override suspend fun getAllTaskGroup(): Flow<List<TaskGroupObject>> {
+            flow.emit(listTaskGroup)
             return flow
         }
 

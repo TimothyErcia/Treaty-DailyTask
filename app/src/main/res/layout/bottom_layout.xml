@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout
     android:layout_width="match_parent"
-    android:layout_height="70dp"
+    android:layout_height="58dp"
     android:background="@drawable/rounded_corners"
     android:backgroundTint="#99323232"
     android:paddingHorizontal="30dp"
@@ -24,7 +24,7 @@
             style="@style/bottom_textStyle"
             android:text="Total Spending"
             android:paddingTop="5dp"
-            android:textSize="15sp"/>
+            android:textSize="12sp" />
 
         <TextView
             android:id="@+id/totalSpendingTxt"
@@ -32,7 +32,7 @@
             android:layout_height="40sp"
             style="@style/bottom_textStyle"
             android:text="$ 0.00"
-            android:textSize="27sp"
+            android:textSize="25sp"
             android:translationY="-5dp" />
 
     </LinearLayout>

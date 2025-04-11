@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.drawerlayout.widget.DrawerLayout.DrawerListener
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
@@ -13,6 +14,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.treaty.dailytask.R
 import com.treaty.dailytask.databinding.FragmentHomeBinding
+import com.treaty.dailytask.viewmodel.MenuViewModel
 import com.treaty.dailytask.viewmodel.TaskGroupViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -20,11 +22,14 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 
 class HomeFragment : Fragment(R.layout.fragment_home) {
     private lateinit var binding: FragmentHomeBinding
     private lateinit var adapter: TaskViewAdapter
     private val taskGroupViewModel: TaskGroupViewModel by viewModel()
+    private val menuViewModel: MenuViewModel by viewModel()
     private lateinit var taskDialog: TaskDialog
 
     override fun onCreateView(
@@ -40,6 +45,8 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         super.onViewCreated(view, savedInstanceState)
         initializeAddTaskGroup()
         initializeDeleteAll()
+        initializeMenu()
+        initializeDrawer()
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) { initializeTaskGroup() }
         }
@@ -143,5 +150,26 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             return resources.getColor(R.color.foodCategory)
         }
         return resources.getColor(R.color.personalCategory)
+    }
+
+    private fun initializeMenu() {
+        binding.headerLayout.menuBtn.setOnClickListener {
+            menuViewModel.openMenu()
+            binding.drawerLayout.open()
+        }
+    }
+
+    private fun initializeDrawer() {
+        binding.sideMenuLayout.timeTxt.text =
+            LocalTime.now().format(DateTimeFormatter.ofPattern("hh:mm a"))
+        binding.drawerLayout.addDrawerListener(object : DrawerListener {
+            override fun onDrawerSlide(drawerView: View, slideOffset: Float) {}
+            override fun onDrawerOpened(drawerView: View) {}
+            override fun onDrawerClosed(drawerView: View) {
+                menuViewModel.closeMenu()
+            }
+
+            override fun onDrawerStateChanged(newState: Int) {}
+        })
     }
 }

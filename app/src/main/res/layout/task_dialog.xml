@@ -15,7 +15,7 @@
             android:layout_height="48dp"
             android:layout_marginHorizontal="40sp"
             android:spinnerMode="dropdown"
-            style="@style/spinner_textStyle"
+            android:popupBackground="@color/white"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -41,9 +41,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textSize="18sp"
-                android:textColor="@color/black"
                 android:paddingVertical="6dp"
                 android:inputType="number"
+                android:textColor="@color/black"
                 android:hint="Price"/>
 
         </com.google.android.material.textfield.TextInputLayout>

@@ -18,13 +18,11 @@
         android:id="@+id/deleteAllBtn"
         android:layout_width="wrap_content"
         android:layout_height="50dp"
-        style="@style/deletebtn_textStyle"
+        style="@style/deletebtn_style"
         android:contentDescription="Delete All"
         android:text="Delete all"
         android:backgroundTint="@android:color/transparent"
         android:textColor="@color/black"
-        app:strokeWidth="2dp"
-        app:strokeColor="@android:color/darker_gray"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 

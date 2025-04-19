@@ -5,13 +5,14 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.drawerlayout.widget.DrawerLayout.DrawerListener
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.timepicker.MaterialTimePicker
+import com.google.android.material.timepicker.TimeFormat
 import com.treaty.dailytask.R
 import com.treaty.dailytask.databinding.FragmentHomeBinding
 import com.treaty.dailytask.viewmodel.MenuViewModel
@@ -22,6 +23,8 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
@@ -45,10 +48,12 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         super.onViewCreated(view, savedInstanceState)
         initializeAddTaskGroup()
         initializeDeleteAll()
-        initializeMenu()
         initializeDrawer()
+        initializeNotificationToggle()
         viewLifecycleOwner.lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) { initializeTaskGroup() }
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                initializeTaskGroup()
+            }
         }
     }
 
@@ -152,24 +157,51 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         return resources.getColor(R.color.personalCategory)
     }
 
-    private fun initializeMenu() {
+    private fun initializeDrawer() {
         binding.headerLayout.menuBtn.setOnClickListener {
-            menuViewModel.openMenu()
             binding.drawerLayout.open()
+        }
+        binding.sideMenuLayout.toggleBtn.setOnClickListener { triggerToggle() }
+        binding.sideMenuLayout.timeTxt.setOnClickListener { initializeTime() }
+        binding.sideMenuLayout.cloudSaveBtn.setOnClickListener {
+            TODO("Button for manual sync save")
         }
     }
 
-    private fun initializeDrawer() {
-        binding.sideMenuLayout.timeTxt.text =
-            LocalTime.now().format(DateTimeFormatter.ofPattern("hh:mm a"))
-        binding.drawerLayout.addDrawerListener(object : DrawerListener {
-            override fun onDrawerSlide(drawerView: View, slideOffset: Float) {}
-            override fun onDrawerOpened(drawerView: View) {}
-            override fun onDrawerClosed(drawerView: View) {
-                menuViewModel.closeMenu()
-            }
+    private fun initializeTime() {
+        val currentTime = LocalDateTime.now()
+        val picker =
+            MaterialTimePicker.Builder()
+                .setTimeFormat(TimeFormat.CLOCK_12H)
+                .setTitleText("Select Notification Time")
+                .setHour(currentTime.hour)
+                .setMinute(currentTime.minute)
+                .build()
+        picker.show(childFragmentManager, "pickerTag")
+        picker.addOnPositiveButtonClickListener {
+            val selectedTime = LocalTime.of(picker.hour, picker.minute)
+            binding.sideMenuLayout.timeTxt.text = selectedTime.format(DateTimeFormatter.ofPattern("hh:mm a"))
+            menuViewModel.updateReminderTime(LocalDateTime.of(LocalDate.now(), selectedTime))
+        }
+    }
 
-            override fun onDrawerStateChanged(newState: Int) {}
-        })
+    private fun triggerToggle() {
+        menuViewModel.notificationToggle()
+        initializeNotificationToggle()
+    }
+
+    private fun initializeNotificationToggle() {
+        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
+            binding.sideMenuLayout.timeTxt.text = menuViewModel.menuTime.value.format(DateTimeFormatter.ofPattern("hh:mm a"))
+            menuViewModel.menuNotificationToggle.collectLatest {
+                val resourceStr =
+                    if (it) {
+                        R.drawable.toggle_left
+                    } else {
+                        R.drawable.toggle_on
+                    }
+                binding.sideMenuLayout.toggleBtn.setImageResource(resourceStr)
+            }
+        }
     }
 }

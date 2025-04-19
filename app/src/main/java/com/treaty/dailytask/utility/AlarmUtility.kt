@@ -5,35 +5,37 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import com.treaty.dailytask.receivers.AlarmReceivers
-import java.util.Calendar
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.ZoneOffset
+import java.time.ZonedDateTime
 
 class AlarmUtility(private val context: Context) {
-    private val alarmManager: AlarmManager?
-    private val calendar: Calendar
+    private val alarmManager: AlarmManager =
+        context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+    private lateinit var currentTime: LocalDateTime
     private lateinit var intent: Intent
     private lateinit var pendingIntent: PendingIntent
 
-    init {
-        alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        calendar = Calendar.getInstance().apply {
-            set(Calendar.HOUR_OF_DAY, 19)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-        }
+    fun setAlarm(time: LocalDateTime) {
+        stopAlarm()
+        currentTime = time
     }
 
     fun startAlarm() {
         intent = Intent(context, AlarmReceivers::class.java)
         pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
-        alarmManager?.setRepeating(
-            AlarmManager.RTC_WAKEUP,
-            calendar.timeInMillis,
+        val offset = ZonedDateTime.of(currentTime.toLocalDate(), currentTime.toLocalTime(), ZoneId.of("Asia/Manila")).offset
+        alarmManager.setRepeating(
+            AlarmManager.RTC,
+            currentTime.toEpochSecond(offset),
             AlarmManager.INTERVAL_DAY,
-            pendingIntent
-        )
+            pendingIntent)
     }
 
     fun stopAlarm() {
-        alarmManager?.cancel(pendingIntent)
+        try {
+            alarmManager.cancel(pendingIntent)
+        } catch (_: Exception) {}
     }
 }

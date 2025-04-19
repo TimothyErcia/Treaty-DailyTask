@@ -46,6 +46,6 @@ val viewModelModule = module {
         TaskGroupViewModel(get<TaskGroupRepositoryImpl>())
     }
     viewModel {
-        MenuViewModel()
+        MenuViewModel(get<ReminderRepositoryImpl>(), get<AlarmUtility>())
     }
 }

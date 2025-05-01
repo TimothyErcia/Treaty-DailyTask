@@ -74,6 +74,7 @@ class TaskDialog(
     }
 
     private fun onCancel() {
+        taskGroupViewModel.setMessage(Result.success(""))
         dialog?.dismiss()
     }
 

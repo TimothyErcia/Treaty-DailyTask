@@ -37,7 +37,7 @@ val appModule = module {
 }
 
 val repositoryModule = module {
-    single { ReminderDAO(get()) }
+    single { ReminderDAO(get<Realm>(), get<AlarmUtility>()) }
     single { TaskGroupDAO(get()) }
 }
 
@@ -46,6 +46,6 @@ val viewModelModule = module {
         TaskGroupViewModel(get<TaskGroupRepositoryImpl>())
     }
     viewModel {
-        MenuViewModel(get<ReminderRepositoryImpl>(), get<AlarmUtility>())
+        MenuViewModel(get<ReminderRepositoryImpl>())
     }
 }

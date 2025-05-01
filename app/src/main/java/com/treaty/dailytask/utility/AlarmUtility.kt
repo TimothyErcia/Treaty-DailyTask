@@ -7,35 +7,38 @@ import android.content.Intent
 import com.treaty.dailytask.receivers.AlarmReceivers
 import java.time.LocalDateTime
 import java.time.ZoneId
-import java.time.ZoneOffset
 import java.time.ZonedDateTime
 
-class AlarmUtility(private val context: Context) {
+class AlarmUtility(context: Context) {
     private val alarmManager: AlarmManager =
         context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
     private lateinit var currentTime: LocalDateTime
-    private lateinit var intent: Intent
-    private lateinit var pendingIntent: PendingIntent
-
+    private var intent: Intent = Intent(context, AlarmReceivers::class.java)
+    private var pendingIntent: PendingIntent =
+        PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
     fun setAlarm(time: LocalDateTime) {
         stopAlarm()
         currentTime = time
     }
 
-    fun startAlarm() {
-        intent = Intent(context, AlarmReceivers::class.java)
-        pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
+    fun startAlarm(): Result<String> {
+        if (alarmManager == null) {
+            return Result.failure(Throwable("Error Message"))
+        }
         val offset = ZonedDateTime.of(currentTime.toLocalDate(), currentTime.toLocalTime(), ZoneId.of("Asia/Manila")).offset
         alarmManager.setRepeating(
             AlarmManager.RTC,
             currentTime.toEpochSecond(offset),
             AlarmManager.INTERVAL_DAY,
             pendingIntent)
+        return Result.success("Alarm Enabled")
     }
 
-    fun stopAlarm() {
-        try {
-            alarmManager.cancel(pendingIntent)
-        } catch (_: Exception) {}
+    fun stopAlarm(): Result<String> {
+        if (pendingIntent == null) {
+            return Result.failure(Throwable("Error Message"))
+        }
+        alarmManager.cancel(pendingIntent)
+        return Result.success("Alarm Stopped")
     }
 }

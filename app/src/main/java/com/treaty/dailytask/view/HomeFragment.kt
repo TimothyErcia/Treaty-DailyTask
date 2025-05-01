@@ -2,6 +2,7 @@ package com.treaty.dailytask.view
 
 import android.content.res.ColorStateList
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,6 +16,7 @@ import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
 import com.treaty.dailytask.R
 import com.treaty.dailytask.databinding.FragmentHomeBinding
+import com.treaty.dailytask.model.Status
 import com.treaty.dailytask.viewmodel.MenuViewModel
 import com.treaty.dailytask.viewmodel.TaskGroupViewModel
 import kotlinx.coroutines.Dispatchers
@@ -49,16 +51,20 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         initializeAddTaskGroup()
         initializeDeleteAll()
         initializeDrawer()
-        initializeNotificationToggle()
         viewLifecycleOwner.lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                initializeTaskGroup()
-            }
+            repeatOnLifecycle(Lifecycle.State.STARTED) { initializeTaskGroup() }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
+            repeatOnLifecycle(Lifecycle.State.STARTED) { initializeNotificationToggle() }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
+            repeatOnLifecycle(Lifecycle.State.STARTED) { initializeNotificationTime() }
         }
     }
 
     private suspend fun initializeTaskGroup() {
-
         taskGroupViewModel.taskGroup.collectLatest { data ->
             adapter =
                 TaskViewAdapter(
@@ -76,7 +82,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                                 withContext(Dispatchers.IO) {
                                     taskGroupViewModel.deleteByCategory(data[index].categoryID)
                                 }
-                                showToast()
+                                showToast(taskGroupViewModel.resultMessage.value)
                             }
                             binding.taskGroupListView.removeViewAt(index)
                         }
@@ -110,31 +116,36 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             object : FragmentManager.FragmentLifecycleCallbacks() {
                 override fun onFragmentDestroyed(fm: FragmentManager, f: Fragment) {
                     super.onFragmentDestroyed(fm, f)
-                    viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Main) { showToast() }
+                    viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
+                        Log.d(
+                            "TAG",
+                            "onFragmentDestroyed: ${taskGroupViewModel.resultMessage.value}"
+                        )
+                        showToast(taskGroupViewModel.resultMessage.value)
+                    }
                     childFragmentManager.unregisterFragmentLifecycleCallbacks(this)
                 }
             },
             false)
     }
 
-    private suspend fun showToast() {
-        val result = taskGroupViewModel.resultMessage.value
-        if (result.statusMessage.isNotEmpty()) {
+    private suspend fun showToast(message: Status) {
+        if (message.statusMessage.isNotEmpty()) {
             binding.customSnackbar.root.visibility = View.VISIBLE
             binding.customSnackbar.snackbarLayout.backgroundTintList =
-                ColorStateList.valueOf(getColor(result.statusValue))
-            binding.customSnackbar.snackbarText.text = result.statusMessage
+                ColorStateList.valueOf(getColor(message.statusValue))
+            binding.customSnackbar.snackbarText.text = message.statusMessage
             binding.customSnackbar.root.translationY = 500f
             binding.customSnackbar.root
                 .animate()
                 .translationY(500f)
-                .setDuration(950)
+                .setDuration(500)
                 .translationY(0f)
             delay(2000)
             binding.customSnackbar.root
                 .animate()
                 .translationY(0f)
-                .setDuration(800)
+                .setDuration(500)
                 .translationY(500f)
             delay(1000)
             binding.customSnackbar.root.visibility = View.GONE
@@ -145,7 +156,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         binding.headerLayout.deleteAllBtn.setOnClickListener {
             viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
                 withContext(Dispatchers.IO) { taskGroupViewModel.deleteAll() }
-                showToast()
+                showToast(taskGroupViewModel.resultMessage.value)
             }
         }
     }
@@ -158,9 +169,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     }
 
     private fun initializeDrawer() {
-        binding.headerLayout.menuBtn.setOnClickListener {
-            binding.drawerLayout.open()
-        }
+        binding.headerLayout.menuBtn.setOnClickListener { binding.drawerLayout.open() }
         binding.sideMenuLayout.toggleBtn.setOnClickListener { triggerToggle() }
         binding.sideMenuLayout.timeTxt.setOnClickListener { initializeTime() }
         binding.sideMenuLayout.cloudSaveBtn.setOnClickListener {
@@ -180,28 +189,34 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         picker.show(childFragmentManager, "pickerTag")
         picker.addOnPositiveButtonClickListener {
             val selectedTime = LocalTime.of(picker.hour, picker.minute)
-            binding.sideMenuLayout.timeTxt.text = selectedTime.format(DateTimeFormatter.ofPattern("hh:mm a"))
+            binding.sideMenuLayout.timeTxt.text =
+                selectedTime.format(DateTimeFormatter.ofPattern("hh:mm a"))
             menuViewModel.updateReminderTime(LocalDateTime.of(LocalDate.now(), selectedTime))
         }
     }
 
     private fun triggerToggle() {
         menuViewModel.notificationToggle()
-        initializeNotificationToggle()
+        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
+            initializeNotificationToggle()
+        }
     }
 
-    private fun initializeNotificationToggle() {
-        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
-            binding.sideMenuLayout.timeTxt.text = menuViewModel.menuTime.value.format(DateTimeFormatter.ofPattern("hh:mm a"))
-            menuViewModel.menuNotificationToggle.collectLatest {
-                val resourceStr =
-                    if (it) {
-                        R.drawable.toggle_left
-                    } else {
-                        R.drawable.toggle_on
-                    }
-                binding.sideMenuLayout.toggleBtn.setImageResource(resourceStr)
-            }
+    private suspend fun initializeNotificationToggle() {
+        menuViewModel.menuNotificationToggle.collectLatest {
+            val resourceStr =
+                if (it) {
+                    R.drawable.toggle_left
+                } else {
+                    R.drawable.toggle_on
+                }
+            binding.sideMenuLayout.toggleBtn.setImageResource(resourceStr)
+        }
+    }
+
+    private suspend fun initializeNotificationTime() {
+        menuViewModel.menuTime.collectLatest {
+            binding.sideMenuLayout.timeTxt.text = it.format(DateTimeFormatter.ofPattern("hh:mm a"))
         }
     }
 }

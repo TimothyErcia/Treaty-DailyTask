@@ -1,9 +1,8 @@
 package com.treaty.dailytask.repository.reminder
 
 import com.treaty.dailytask.model.Reminder
-import io.realm.kotlin.Realm
-import io.realm.kotlin.RealmConfiguration
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -14,19 +13,25 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.mockito.Mock
+import org.mockito.Mockito.`when`
+import org.mockito.junit.MockitoJUnitRunner
+import java.time.LocalDateTime
 
+@OptIn(ExperimentalCoroutinesApi::class)
+@RunWith(MockitoJUnitRunner::class)
 class ReminderRepositoryImplTest {
 
     private val testDispatcher = StandardTestDispatcher()
-    private val realmConfiguration = RealmConfiguration.Builder(schema = setOf(Reminder::class))
-        .inMemory()
-        .name("test-realm")
-        .build()
-    private val realm = Realm.open(realmConfiguration)
-    private val reminderRepositoryImpl = ReminderRepositoryImpl(ReminderDAO(realm))
+    private lateinit var reminderRepositoryImpl: ReminderRepositoryImpl
+
+    @Mock
+    private lateinit var reminderDAO: ReminderRepository
 
     @Before
     fun setUp() {
+        reminderRepositoryImpl = ReminderRepositoryImpl(reminderDAO)
         Dispatchers.setMain(testDispatcher)
     }
 
@@ -35,26 +40,35 @@ class ReminderRepositoryImplTest {
         Dispatchers.resetMain()
     }
 
-    @Test fun `getReminderStatus returns Reminder`() = runTest {
-        reminderRepositoryImpl.updateReminderTrigger(Reminder(true))
+    @Test
+    fun `getReminderStatus returns Reminder`() = runTest(testDispatcher) {
+        `when`(reminderDAO.getReminderStatus()).thenReturn(Result.success(Reminder(true, 0L)))
+        reminderRepositoryImpl.updateReminderTrigger(true, LocalDateTime.now())
         val reminder = reminderRepositoryImpl.getReminderStatus()
-
-        reminder?.let {
-            assertEquals(reminder.isCompleted, true)
-        }
+        assertTrue(reminder.isToggled)
     }
 
-    @Test fun `updateReminderTrigger with true paramenter`() = runTest {
-        val reminder = Reminder(true)
-        reminderRepositoryImpl.updateReminderTrigger(reminder)
+    @Test
+    fun `updateReminderTrigger with true parameter`() = runTest(testDispatcher) {
+        val reminder = Reminder(true, 0L)
+        reminderRepositoryImpl.updateReminderTrigger(true, LocalDateTime.now())
 
-        assertTrue(reminder.isCompleted)
+        assertTrue(reminder.isToggled)
     }
 
-    @Test fun `updateReminderTrigger with false paramenter`() = runTest {
-        val reminder = Reminder(false)
-        reminderRepositoryImpl.updateReminderTrigger(reminder)
+    @Test
+    fun `updateReminderTrigger with false paramenter`() = runTest(testDispatcher) {
+        val reminder = Reminder(false, 0L)
+        reminderRepositoryImpl.updateReminderTrigger(false, LocalDateTime.now())
 
-        assertFalse(reminder.isCompleted)
+        assertFalse(reminder.isToggled)
+    }
+
+    @Test
+    fun `getReminderStatus returns default`() = runTest(testDispatcher) {
+        `when`(reminderDAO.getReminderStatus()).thenReturn(Result.failure(Throwable("Error")))
+        val reminder = reminderRepositoryImpl.getReminderStatus()
+        assertFalse(reminder.isToggled)
+        assertEquals(reminder.dateOfTrigger, 0L)
     }
 }

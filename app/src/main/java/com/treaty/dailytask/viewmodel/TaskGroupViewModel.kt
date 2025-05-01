@@ -112,7 +112,7 @@ class TaskGroupViewModel(private val taskGroupRepositoryImpl: TaskGroupRepositor
         setMessage(message)
     }
 
-    private fun setMessage(result: Result<String>) {
+    fun setMessage(result: Result<String>) {
         val message = result.getOrThrow()
         _resultMessage.value = Status(message, result.isSuccess)
     }

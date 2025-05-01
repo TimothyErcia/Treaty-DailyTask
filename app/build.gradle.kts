@@ -86,8 +86,10 @@ kover {
                     "*.utility.*",
                     "*.view.*",
                     "*.di.*",
-//                    "*.model.*",
-                    "*.AlarmReceivers",
+                    "*.TaskObject",
+                    "*.TaskGroupObject",
+                    "*.receivers.*",
+                    "*.ReminderDAO",
                 )
             }
         }

@@ -1,12 +1,15 @@
 package com.treaty.dailytask.repository
 
+import com.treaty.dailytask.model.Reminder
 import com.treaty.dailytask.model.Task.TaskObject
 import com.treaty.dailytask.model.TaskGroup.TaskGroupObject
+import com.treaty.dailytask.repository.reminder.ReminderRepository
 import com.treaty.dailytask.repository.taskgroup.TaskGroupRepository
 import io.realm.kotlin.ext.realmListOf
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import java.time.LocalDateTime
+import java.time.ZoneOffset
 
 class FakeRepository {
     class FakeRepositoryDAO : TaskGroupRepository {
@@ -41,5 +44,21 @@ class FakeRepository {
         override suspend fun deleteAllTaskGroup(): Result<String> {
             return Result.success("Successfully removed All")
         }
+    }
+
+    class FakeReminderDAO : ReminderRepository {
+        private var reminder = Reminder()
+        override suspend fun updateReminderTrigger(reminder: Reminder, currentTime: LocalDateTime) {
+            this.reminder = reminder
+        }
+
+        override suspend fun getReminderStatus(): Result<Reminder?> {
+            return Result.success(Reminder(true, LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)))
+        }
+
+        override fun stopReminder(): Result<String> {
+            return Result.success("Stopped")
+        }
+
     }
 }

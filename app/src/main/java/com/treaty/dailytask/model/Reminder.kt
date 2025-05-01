@@ -8,10 +8,11 @@ import java.time.ZoneOffset
 class Reminder() : RealmObject {
     @PrimaryKey
     var reminderId: String = "Reminder Notification"
-    var dateOfTrigger: String = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC).toString()
-    var isCompleted: Boolean = false
+    var dateOfTrigger: Long = 0L
+    var isToggled: Boolean = false
 
-    constructor(isCompleted: Boolean): this() {
-        this.isCompleted = isCompleted
+    constructor(isToggled: Boolean, dateOfTrigger: Long): this() {
+        this.isToggled = isToggled
+        this.dateOfTrigger = dateOfTrigger
     }
 }

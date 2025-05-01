@@ -9,6 +9,7 @@ import com.treaty.dailytask.repository.taskgroup.TaskGroupDAO
 import com.treaty.dailytask.repository.taskgroup.TaskGroupRepositoryImpl
 import com.treaty.dailytask.utility.AlarmUtility
 import com.treaty.dailytask.utility.NetworkUtility
+import com.treaty.dailytask.viewmodel.MenuViewModel
 import com.treaty.dailytask.viewmodel.TaskGroupViewModel
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
@@ -36,12 +37,15 @@ val appModule = module {
 }
 
 val repositoryModule = module {
-    single { ReminderDAO(get()) }
+    single { ReminderDAO(get<Realm>(), get<AlarmUtility>()) }
     single { TaskGroupDAO(get()) }
 }
 
 val viewModelModule = module {
     viewModel {
         TaskGroupViewModel(get<TaskGroupRepositoryImpl>())
+    }
+    viewModel {
+        MenuViewModel(get<ReminderRepositoryImpl>())
     }
 }

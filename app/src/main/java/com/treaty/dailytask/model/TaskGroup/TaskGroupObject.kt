@@ -4,7 +4,6 @@ import com.treaty.dailytask.model.Task.TaskObject
 import io.realm.kotlin.ext.realmListOf
 import io.realm.kotlin.types.RealmList
 import io.realm.kotlin.types.RealmObject
-import io.realm.kotlin.types.RealmUUID
 import io.realm.kotlin.types.annotations.PrimaryKey
 
 open class TaskGroupObject() : RealmObject {
@@ -12,14 +11,17 @@ open class TaskGroupObject() : RealmObject {
     var categoryID: String = ""
     var taskModelList: RealmList<TaskObject> = realmListOf()
     var backgroundColor: Int = 0
+    var totalPrice: Int = 0
 
     constructor(
         categoryID: String,
         taskModelList: RealmList<TaskObject>,
-        backgroundColor: Int
+        backgroundColor: Int,
+        totalPrice: Int,
     ): this() {
         this.categoryID = categoryID
         this.taskModelList = taskModelList
         this.backgroundColor = backgroundColor
+        this.totalPrice = totalPrice
     }
 }

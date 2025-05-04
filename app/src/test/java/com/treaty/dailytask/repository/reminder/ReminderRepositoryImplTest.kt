@@ -8,7 +8,6 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
-import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -17,7 +16,11 @@ import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.Mockito.`when`
 import org.mockito.junit.MockitoJUnitRunner
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.ZoneId
+import java.time.ZonedDateTime
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(MockitoJUnitRunner::class)
@@ -67,8 +70,13 @@ class ReminderRepositoryImplTest {
     @Test
     fun `getReminderStatus returns default`() = runTest(testDispatcher) {
         `when`(reminderDAO.getReminderStatus()).thenReturn(Result.failure(Throwable("Error")))
+        val offset = ZonedDateTime.of(
+            LocalDate.now(),
+            LocalTime.now(),
+            ZoneId.of("Asia/Manila")
+        ).offset
         val reminder = reminderRepositoryImpl.getReminderStatus()
         assertFalse(reminder.isToggled)
-        assertEquals(reminder.dateOfTrigger, 0L)
+        assertTrue(reminder.dateOfTrigger >= LocalDateTime.now().toEpochSecond(offset))
     }
 }

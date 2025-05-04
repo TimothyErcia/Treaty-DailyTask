@@ -4,6 +4,7 @@ import com.treaty.dailytask.model.Task.TaskObject
 import com.treaty.dailytask.model.TaskGroup.TaskGroupObject
 import io.realm.kotlin.Realm
 import io.realm.kotlin.UpdatePolicy
+import io.realm.kotlin.query.RealmQuery
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -26,13 +27,16 @@ class TaskGroupDAO (private val realm: Realm) : TaskGroupRepository {
     }
 
     override suspend fun updateByCategory(categoryId: String, newData: TaskObject): Result<String> {
-        val realmQuery = realm.query(TaskGroupObject::class, "categoryID == $0", categoryId)
-        val realmResult = realmQuery.first().find()
+        val realmQuery: RealmQuery<TaskGroupObject> =
+            realm.query(TaskGroupObject::class, "categoryID == $0", categoryId)
+        val realmResult: TaskGroupObject? = realmQuery.first().find()
 
         if(realmResult != null) {
             realmResult.also { taskGroupObjects ->
                 realm.writeBlocking {
                     findLatest(taskGroupObjects)?.taskModelList?.add(newData)
+                    findLatest(taskGroupObjects)?.totalPrice =
+                        newData.price + taskGroupObjects.totalPrice
                 }
             }
             return Result.success("Successfully Added")
@@ -53,5 +57,24 @@ class TaskGroupDAO (private val realm: Realm) : TaskGroupRepository {
             deleteAll()
         }
         return Result.success("Successfully removed All")
+    }
+
+    override suspend fun updateTotal(
+        categoryId: String,
+        newTotal: Int
+    ): Result<String> {
+        val realmQuery: RealmQuery<TaskGroupObject> =
+            realm.query(TaskGroupObject::class, "categoryID == $0", categoryId)
+        val realmResult: TaskGroupObject? = realmQuery.first().find()
+
+        if (realmResult != null) {
+            realmResult.also { taskGroupObjects ->
+                realm.writeBlocking {
+                    findLatest(taskGroupObjects)?.totalPrice = newTotal
+                }
+            }
+            return Result.success("Successfully updated total")
+        }
+        return Result.failure(Throwable("Error Message"))
     }
 }

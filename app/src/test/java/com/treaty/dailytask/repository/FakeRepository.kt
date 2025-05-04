@@ -15,9 +15,18 @@ class FakeRepository {
     class FakeRepositoryDAO : TaskGroupRepository {
         private val flow = MutableStateFlow<List<TaskGroupObject>>(emptyList())
         private var listTaskGroup = listOf(
-            TaskGroupObject("Food", realmListOf(TaskObject(100, LocalDateTime.now().plusMinutes(1).toString())), 0),
-            TaskGroupObject("Food", realmListOf(TaskObject(100, LocalDateTime.now().plusMinutes(2).toString())), 0),
-            TaskGroupObject("Transportation", realmListOf(TaskObject(100, LocalDateTime.now().plusMinutes(2).toString())), 0)
+            TaskGroupObject(
+                "Food",
+                realmListOf(TaskObject(100, LocalDateTime.now().plusMinutes(1).toString())),
+                0,
+                100
+            ),
+            TaskGroupObject(
+                "Transportation",
+                realmListOf(TaskObject(100, LocalDateTime.now().plusMinutes(2).toString())),
+                0,
+                100
+            )
         )
         override suspend fun insertOrUpdate(taskGroupObject: TaskGroupObject): Result<String> {
             listTaskGroup = listTaskGroup.plus(taskGroupObject)
@@ -43,6 +52,10 @@ class FakeRepository {
 
         override suspend fun deleteAllTaskGroup(): Result<String> {
             return Result.success("Successfully removed All")
+        }
+
+        override suspend fun updateTotal(categoryId: String, newTotal: Int): Result<String> {
+            return Result.success("Successfully updated total")
         }
     }
 

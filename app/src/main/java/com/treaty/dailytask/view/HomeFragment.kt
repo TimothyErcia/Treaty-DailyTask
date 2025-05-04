@@ -2,7 +2,6 @@ package com.treaty.dailytask.view
 
 import android.content.res.ColorStateList
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -73,7 +72,8 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                         override fun onClickAdd(index: Int) {
                             taskDialog =
                                 TaskDialog(
-                                    data[index].categoryID, taskGroupViewModel = taskGroupViewModel)
+                                    data[index].categoryID, null, taskGroupViewModel
+                                )
                             showDialog()
                         }
 
@@ -85,6 +85,12 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                                 showToast(taskGroupViewModel.resultMessage.value)
                             }
                             binding.taskGroupListView.removeViewAt(index)
+                        }
+
+                        override fun onClickTaskGroup(index: Int) {
+                            taskDialog =
+                                TaskDialog(data[index].categoryID, data[index], taskGroupViewModel)
+                            showDialog()
                         }
                     })
             binding.taskGroupListView.layoutManager =
@@ -105,7 +111,10 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
     private fun initializeAddTaskGroup() {
         binding.bottomLayout.addTaskGroupBtn.setOnClickListener {
-            taskDialog = TaskDialog(taskGroupViewModel = taskGroupViewModel)
+            taskDialog = TaskDialog(
+                currentTaskGroup = null,
+                taskGroupViewModel = taskGroupViewModel
+            )
             showDialog()
         }
     }
@@ -117,10 +126,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                 override fun onFragmentDestroyed(fm: FragmentManager, f: Fragment) {
                     super.onFragmentDestroyed(fm, f)
                     viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
-                        Log.d(
-                            "TAG",
-                            "onFragmentDestroyed: ${taskGroupViewModel.resultMessage.value}"
-                        )
                         showToast(taskGroupViewModel.resultMessage.value)
                     }
                     childFragmentManager.unregisterFragmentLifecycleCallbacks(this)

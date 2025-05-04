@@ -19,7 +19,8 @@ import kotlinx.coroutines.withContext
 import java.time.LocalDateTime
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class TaskGroupViewModel(private val taskGroupRepositoryImpl: TaskGroupRepositoryImpl) : ViewModel() {
+class TaskGroupViewModel(private val taskGroupRepositoryImpl: TaskGroupRepositoryImpl) :
+    ViewModel() {
 
     private val _taskGroup = MutableStateFlow<List<TaskGroupModel>>(emptyList())
     val taskGroup =
@@ -31,9 +32,8 @@ class TaskGroupViewModel(private val taskGroupRepositoryImpl: TaskGroupRepositor
     val resultMessage = _resultMessage.asStateFlow()
 
     private suspend fun insertOrUpdateTaskGroup(taskGroupModel: TaskGroupModel) {
-        val insertResult = withContext(Dispatchers.IO) {
-            taskGroupRepositoryImpl.insertOrUpdate(taskGroupModel)
-        }
+        val insertResult =
+            withContext(Dispatchers.Default) { taskGroupRepositoryImpl.insertOrUpdate(taskGroupModel) }
 
         setMessage(insertResult)
     }
@@ -51,17 +51,17 @@ class TaskGroupViewModel(private val taskGroupRepositoryImpl: TaskGroupRepositor
     }
 
     suspend fun getCategoryAndInsert(categoryId: String, newData: TaskModel, backgroundColor: Int) {
-        val categoryRes = withContext(Dispatchers.IO) {
-            taskGroupRepositoryImpl
-                .updateByCategory(categoryId, newData)
-        }
+        val categoryRes =
+            withContext(Dispatchers.Default) {
+                taskGroupRepositoryImpl.updateByCategory(categoryId, newData)
+            }
 
-        categoryRes.onSuccess { message ->
-            setMessage(categoryRes)
-        }.onFailure {
-            val taskGroupModel = createTaskGroup(categoryId, listOf(newData), backgroundColor)
-            insertOrUpdateTaskGroup(taskGroupModel.getOrThrow())
-        }
+        categoryRes
+            .onSuccess { message -> setMessage(categoryRes) }
+            .onFailure {
+                val taskGroupModel = createTaskGroup(categoryId, listOf(newData), backgroundColor)
+                insertOrUpdateTaskGroup(taskGroupModel.getOrThrow())
+            }
     }
 
     fun createNewTask(price: String): Result<TaskModel> {
@@ -81,7 +81,7 @@ class TaskGroupViewModel(private val taskGroupRepositoryImpl: TaskGroupRepositor
     fun createTaskGroup(
         category: String,
         currentTaskList: List<TaskModel>,
-        backgroundColor: Int
+        backgroundColor: Int,
     ): Result<TaskGroupModel> {
         if (currentTaskList.isEmpty()) {
             return Result.failure(Throwable("Error Message"))
@@ -95,25 +95,34 @@ class TaskGroupViewModel(private val taskGroupRepositoryImpl: TaskGroupRepositor
             TaskGroupModel(
                 categoryID = category,
                 taskModelList = currentTaskList,
-                backgroundColor = backgroundColor)
+                backgroundColor = backgroundColor,
+                totalPrice = taskGroupRepositoryImpl.getTotalPrice(currentTaskList)
+            )
         return Result.success(taskGroup)
     }
 
     suspend fun deleteByCategory(categoryId: String) =
-        withContext(Dispatchers.IO) {
+        withContext(Dispatchers.Default) {
             val message = taskGroupRepositoryImpl.deleteByCategory(categoryId)
 
             setMessage(message)
         }
 
-    suspend fun deleteAll() = withContext(Dispatchers.IO) {
-        val message = taskGroupRepositoryImpl.deleteAll()
+    suspend fun deleteAll() =
+        withContext(Dispatchers.Default) {
+            val message = taskGroupRepositoryImpl.deleteAll()
 
-        setMessage(message)
-    }
+            setMessage(message)
+        }
 
     fun setMessage(result: Result<String>) {
         val message = result.getOrThrow()
         _resultMessage.value = Status(message, result.isSuccess)
     }
+
+    suspend fun updateTotalPrice(categoryId: String, newTotal: Int) =
+        withContext(Dispatchers.Default) {
+            val message = taskGroupRepositoryImpl.updateCategoryTotal(categoryId, newTotal)
+            setMessage(message)
+        }
 }

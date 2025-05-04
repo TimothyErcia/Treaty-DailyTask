@@ -9,7 +9,7 @@ import com.treaty.dailytask.databinding.TaskViewBinding
 import com.treaty.dailytask.model.TaskGroup.TaskGroupModel
 
 class TaskViewAdapter(
-    private var taskGroupObject: List<TaskGroupModel>,
+    private var taskGroupModel: List<TaskGroupModel>,
     private val taskGroupEvent: TaskGroupEvent
 ) : RecyclerView.Adapter<TaskViewAdapter.TaskViewHolder>() {
 
@@ -21,14 +21,17 @@ class TaskViewAdapter(
     override fun onBindViewHolder(holder: TaskViewHolder, position: Int) {
         holder.binding.addTaskBtn.setOnClickListener { taskGroupEvent.onClickAdd(position) }
         holder.binding.removeTaskBtn.setOnClickListener { taskGroupEvent.onClickRemove(position) }
-        holder.binding.categoryTitleTxt.text = taskGroupObject[position].categoryID
-        holder.binding.priceTxt.text = "$ ${taskGroupObject[position].totalPrice}"
-        holder.binding.lastUpdateTxt.text = "Last added date: ${taskGroupObject[position].lastUpdate} - $ ${taskGroupObject[position].lastPrice}"
-        holder.binding.taskViewLayout.backgroundTintList = ColorStateList.valueOf(taskGroupObject[position].backgroundColor)
+        holder.binding.taskViewLayout.setOnClickListener { taskGroupEvent.onClickTaskGroup(position) }
+        holder.binding.categoryTitleTxt.text = taskGroupModel[position].categoryID
+        holder.binding.priceTxt.text = "$ ${taskGroupModel[position].totalPrice}"
+        holder.binding.lastUpdateTxt.text =
+            "Last added date: ${taskGroupModel[position].lastUpdate} - $ ${taskGroupModel[position].lastPrice}"
+        holder.binding.taskViewLayout.backgroundTintList =
+            ColorStateList.valueOf(taskGroupModel[position].backgroundColor)
     }
 
     override fun getItemCount(): Int {
-        return taskGroupObject.size
+        return taskGroupModel.size
     }
 
     inner class TaskViewHolder(val binding: TaskViewBinding) : ViewHolder(binding.root)
@@ -36,5 +39,6 @@ class TaskViewAdapter(
     interface TaskGroupEvent {
         fun onClickAdd(index: Int)
         fun onClickRemove(index: Int)
+        fun onClickTaskGroup(index: Int)
     }
 }

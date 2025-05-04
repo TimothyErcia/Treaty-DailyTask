@@ -213,4 +213,22 @@ class TaskGroupViewModelUnitTest {
         taskGroupRepositoryImpl.deleteAll()
         assertEquals(taskGroupViewModel.resultMessage.value.statusMessage, "Successfully removed All")
     }
+
+    @Test
+    fun `updateTotalPrice call and return Result success`() = runTest(testDispatcher) {
+        taskGroupViewModel.getCategoryAndInsert("Food", mockTaskModel, 0)
+        backgroundScope.launch {
+            taskGroupViewModel.taskGroup.collect()
+            assertTrue(taskGroupViewModel.taskGroup.value.isNotEmpty())
+            assertEquals(taskGroupViewModel.taskGroup.value[0].totalPrice, 100)
+            taskGroupViewModel.updateTotalPrice("Food", 200)
+            assertEquals(taskGroupViewModel.taskGroup.value[0].totalPrice, 200)
+        }
+
+        taskGroupViewModel.updateTotalPrice("Food", 200)
+        assertEquals(
+            taskGroupViewModel.resultMessage.value.statusMessage,
+            "Successfully updated total"
+        )
+    }
 }

@@ -33,7 +33,7 @@ class TaskGroupRepositoryImplTest {
 
     private val realm = Realm.open(realmConfiguration)
     private val taskGroupDAO = TaskGroupDAO(realm)
-    private val taskGroupRepositoryImpl = TaskGroupRepositoryImpl(taskGroupDAO)
+    private var taskGroupRepositoryImpl = TaskGroupRepositoryImpl(taskGroupDAO)
 
     @Before
     fun setUp() {
@@ -79,11 +79,19 @@ class TaskGroupRepositoryImplTest {
     @Test
     fun `getAllTaskGroup map TaskGroupObject to TaskGroupModel`() = runTest(testDispatcher) {
         backgroundScope.launch {
-            taskGroupDAO.insertOrUpdate(TaskGroupObject("Home", realmListOf(TaskObject(100, "2020")), 0))
+            taskGroupDAO.insertOrUpdate(
+                TaskGroupObject(
+                    "Home",
+                    realmListOf(TaskObject(100, "2020")),
+                    0,
+                    100
+                )
+            )
             val res = taskGroupDAO.getAllTaskGroup()
             res.collect {
                 assertTrue(it.isNotEmpty())
                 assertEquals(it[0].categoryID, "Home")
+                assertEquals(it[0].totalPrice, 100)
             }
         }
     }
@@ -111,5 +119,20 @@ class TaskGroupRepositoryImplTest {
         val res = taskGroupRepositoryImpl.deleteAll()
         assertTrue(res.isSuccess)
         assertEquals(res.getOrThrow(), "Successfully removed All")
+    }
+
+    @Test
+    fun `updateCategoryTotal and return Result success`() = runTest(testDispatcher) {
+        taskGroupRepositoryImpl = TaskGroupRepositoryImpl(FakeRepository.FakeRepositoryDAO())
+        val res = taskGroupRepositoryImpl.updateCategoryTotal("Food", 100)
+
+        assertTrue(res.isSuccess)
+        assertEquals(res.getOrThrow(), "Successfully updated total")
+    }
+
+    @Test
+    fun `updateCategoryTotal and return Result failure`() = runTest(testDispatcher) {
+        val res = taskGroupRepositoryImpl.updateCategoryTotal("", 100)
+        assertTrue(res.isFailure)
     }
 }

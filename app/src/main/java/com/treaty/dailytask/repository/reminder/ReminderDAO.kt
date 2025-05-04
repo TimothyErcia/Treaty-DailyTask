@@ -21,7 +21,11 @@ class ReminderDAO(private val realm: Realm, private val alarmUtility: AlarmUtili
 
     override suspend fun getReminderStatus(): Result<Reminder?> {
         val realmResult = realm.query(Reminder::class).find()
-        return Result.success(realmResult.getOrNull(0))
+        val reminderResult = realmResult.getOrNull(0)
+        if (reminderResult != null) {
+            return Result.success(realmResult[0])
+        }
+        return Result.failure(Throwable("Error Message"))
     }
 
     override fun stopReminder(): Result<String> {

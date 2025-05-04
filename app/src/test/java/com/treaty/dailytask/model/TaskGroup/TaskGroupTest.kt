@@ -13,5 +13,6 @@ class TaskGroupTest {
         assertTrue(taskGroup.isValid())
         assertTrue(taskGroup.taskModelList.isEmpty())
         assertEquals(taskGroup.backgroundColor, 0)
+        assertEquals(taskGroup.totalPrice, 0)
     }
 }

@@ -2,6 +2,7 @@ package com.treaty.dailytask.view
 
 import android.app.Dialog
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
@@ -14,18 +15,21 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.treaty.dailytask.R
 import com.treaty.dailytask.databinding.TaskDialogBinding
 import com.treaty.dailytask.model.Task.TaskModel
+import com.treaty.dailytask.model.TaskGroup.TaskGroupModel
 import com.treaty.dailytask.viewmodel.TaskGroupViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class TaskDialog(
     private val categoryID: String = "",
-    private val taskGroupViewModel: TaskGroupViewModel
+    private val currentTaskGroup: TaskGroupModel?,
+    private val taskGroupViewModel: TaskGroupViewModel,
 ) : DialogFragment() {
 
     private lateinit var binding: TaskDialogBinding
     private var accumulatedPrice: Int = 0
     private var price: String = ""
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -52,23 +56,39 @@ class TaskDialog(
         binding.proceedBtn.setOnClickListener { onAdd() }
         binding.addAccumulationBtn.setOnClickListener { onAddAccumulation() }
         binding.resetAccumulationBtn.setOnClickListener { onResetAccumulation() }
-        binding.priceInput.doAfterTextChanged { it -> price = it.toString()}
+        currentTaskGroup?.let {
+            binding.priceInput.setText(it.totalPrice.toString())
+            price = it.totalPrice.toString()
+        }
+        binding.priceInput.doAfterTextChanged { price = it.toString() }
+        Log.d("TAG", "initializeUI: $currentTaskGroup")
     }
 
     private fun onAdd() {
         viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
             val category = categoryID.ifEmpty { binding.categoryInput.selectedItem.toString() }
             val backgroundColor = getCategoryColor(category)
-
-            val finalPrice = if(accumulatedPrice > 0) accumulatedPrice.toString() else { price }
-            val newTask = taskGroupViewModel.createNewTask(finalPrice)
-            newTask.onSuccess { task ->
-                insertCurrentTask(category, task, backgroundColor)
+            val finalPrice: Int =
+                if (accumulatedPrice > 0) {
+                    accumulatedPrice
+                } else {
+                    price.toInt()
+                }
+            if (currentTaskGroup != null) {
+                taskGroupViewModel.updateTotalPrice(currentTaskGroup.categoryID, price.toInt())
+                dismiss()
+            } else {
+                val newTask = taskGroupViewModel.createNewTask(finalPrice.toString())
+                newTask.onSuccess { task -> insertCurrentTask(category, task, backgroundColor) }
             }
         }
     }
 
-    private suspend fun insertCurrentTask(category: String, newTask: TaskModel, backgroundColor: Int) {
+    private suspend fun insertCurrentTask(
+        category: String,
+        newTask: TaskModel,
+        backgroundColor: Int
+    ) {
         taskGroupViewModel.getCategoryAndInsert(category, newTask, backgroundColor)
         dismiss()
     }

@@ -25,6 +25,12 @@ class MainActivity : AppCompatActivity() {
         )
         WindowInsetsControllerCompat(window, window.decorView).isAppearanceLightStatusBars = true
         Log.d("NETWORK", "onCreate: ${networkUtility.isOnline()}")
-        requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), PackageManager.PERMISSION_GRANTED)
+        requestPermissions(
+            arrayOf(
+                Manifest.permission.POST_NOTIFICATIONS,
+                Manifest.permission.USE_EXACT_ALARM,
+                Manifest.permission.SCHEDULE_EXACT_ALARM
+            ), PackageManager.PERMISSION_GRANTED
+        )
     }
 }

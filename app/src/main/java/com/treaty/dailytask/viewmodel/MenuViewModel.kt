@@ -25,7 +25,7 @@ class MenuViewModel(private val reminderRepositoryImpl: ReminderRepositoryImpl) 
 
     fun notificationToggle() {
         _menuNotificationToggle.value = !_menuNotificationToggle.value
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch(Dispatchers.Default) {
             reminderRepositoryImpl.updateReminderTrigger(
                 _menuNotificationToggle.value,
                 _menuTime.value
@@ -45,9 +45,10 @@ class MenuViewModel(private val reminderRepositoryImpl: ReminderRepositoryImpl) 
     }
 
     fun updateReminderTime(currentTime: LocalDateTime) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch(Dispatchers.Default) {
             reminderRepositoryImpl.updateReminderTrigger(true, currentTime)
         }
+        _menuTime.value = currentTime
         _menuNotificationToggle.value = true
     }
 }

@@ -17,16 +17,24 @@ class ReminderRepositoryImpl(private val reminderDAO: ReminderRepository) {
     suspend fun getReminderStatus(): Reminder {
         val result = reminderDAO.getReminderStatus()
         val reminder =
-            result.getOrDefault(Reminder(false, LocalDateTime.now().toEpochSecond(offset)))
+            result.getOrDefault(Reminder(false, LocalDateTime.now().toLong()))
         return reminder!!
     }
 
     suspend fun updateReminderTrigger(notificationToggle: Boolean, currentTime: LocalDateTime) {
-        val reminder = Reminder(notificationToggle, currentTime.toEpochSecond(offset))
+        val reminder = Reminder(notificationToggle, currentTime.toLong())
         if (notificationToggle) {
             reminderDAO.updateReminderTrigger(reminder, currentTime)
         } else {
             reminderDAO.stopReminder()
         }
+    }
+
+    private fun LocalDateTime.toLong(): Long {
+        return this.toEpochSecond(offset)
+    }
+
+    fun toLocalDateTime(epoch: Long): LocalDateTime {
+        return LocalDateTime.ofEpochSecond(epoch, 0, offset)
     }
 }

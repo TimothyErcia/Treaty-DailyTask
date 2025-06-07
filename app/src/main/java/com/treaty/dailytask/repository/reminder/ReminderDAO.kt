@@ -4,26 +4,30 @@ import com.treaty.dailytask.model.Reminder
 import com.treaty.dailytask.utility.AlarmUtility
 import io.realm.kotlin.Realm
 import io.realm.kotlin.UpdatePolicy
+import io.realm.kotlin.query.RealmResults
 import java.time.LocalDateTime
 
 class ReminderDAO(private val realm: Realm, private val alarmUtility: AlarmUtility) :
     ReminderRepository {
-    override suspend fun updateReminderTrigger(reminder: Reminder, currentTime: LocalDateTime) {
+    override suspend fun updateReminderTrigger(
+        reminder: Reminder,
+        currentTime: LocalDateTime
+    ): Result<String> {
         realm.write {
             copyToRealm(
                 reminder,
                 UpdatePolicy.ALL
             )
         }
-        alarmUtility.setAlarm(currentTime)
-        alarmUtility.startAlarm()
+        val alarm = alarmUtility.startAlarm(currentTime)
+        return alarm
     }
 
     override suspend fun getReminderStatus(): Result<Reminder?> {
-        val realmResult = realm.query(Reminder::class).find()
-        val reminderResult = realmResult.getOrNull(0)
-        if (reminderResult != null) {
-            return Result.success(realmResult[0])
+        val realmResult: RealmResults<Reminder> = realm.query(Reminder::class).find()
+        if (realmResult.isNotEmpty()) {
+            val reminderResult: Reminder = realmResult.first()
+            return Result.success(reminderResult)
         }
         return Result.failure(Throwable("Error Message"))
     }

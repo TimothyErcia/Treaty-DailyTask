@@ -18,7 +18,7 @@ class LocalNotificationUtility(private val context: Context) {
     private val channelID = "channel_reminder_id"
     private val channelName = "channel_reminder"
     private val channelDescription = "channel_reminder_description"
-    private val notificationID = 1
+    private val notificationID = 92420
 
     init {
         createNotificationChannel()
@@ -34,15 +34,16 @@ class LocalNotificationUtility(private val context: Context) {
 
     fun showNotification() {
         val intent = Intent(context, MainActivity::class.java)
-        val pendingIntent = PendingIntent.getActivity(context, 0, intent,
-            PendingIntent.FLAG_IMMUTABLE, null)
+        val pendingIntent = PendingIntent.getActivity(
+            context, 1, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
 
         val notificationBuilder = NotificationCompat.Builder(context, channelID).apply {
             setSmallIcon(R.drawable.ic_launcher_foreground)
             setLargeIcon(Icon.createWithResource(context, R.drawable.ic_launcher_foreground))
             setContentTitle(titleReminder)
             setContentText(descriptionReminder)
-            setPriority(NotificationCompat.PRIORITY_MAX)
+            setPriority(NotificationCompat.PRIORITY_HIGH)
             setContentIntent(pendingIntent)
             setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_DEFAULT)
             setAutoCancel(true)

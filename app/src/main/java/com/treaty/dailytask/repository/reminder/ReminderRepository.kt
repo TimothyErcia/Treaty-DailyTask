@@ -4,7 +4,10 @@ import com.treaty.dailytask.model.Reminder
 import java.time.LocalDateTime
 
 interface ReminderRepository {
-    suspend fun updateReminderTrigger(reminder: Reminder, currentTime: LocalDateTime)
+    suspend fun updateReminderTrigger(
+        reminder: Reminder,
+        currentTime: LocalDateTime
+    ): Result<String>
 
     suspend fun getReminderStatus(): Result<Reminder?>
 

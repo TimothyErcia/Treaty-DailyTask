@@ -1,5 +1,5 @@
 # Treaty-DailyTask
-I program everyday until i finish the project
+I program this app until i finish the project
 
 ## What to build
 ### Problem
